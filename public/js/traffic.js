@@ -1,45 +1,45 @@
-var laneTurnImg = null, carImg = [];
+let laneTurnImg = null, carImg = [];
 // 20px = 5m => 4px = 1m => 1px = 0.25m
-var pix2m = 0.25;
-var pix2km = pix2m/1000;
-var km_h2px_s = 1/(3600*pix2km);
-var leftTop = new Point2d(0, 0),
+const pix2m = 0.25;
+const pix2km = pix2m/1000;
+const km_h2px_s = 1/(3600*pix2km);
+let leftTop = new Point2d(0, 0),
 	prevMousePos = new Point2d(0, 0);
 
-var zoom = 1;
-var frequency = 30; // fps = 1000/frequency
+let zoom = 1;
+const frequency = 30; // fps = 1000/frequency
 
-var laneSize = 20;
+const laneSize = 20;
 
 $(function()
 {
-	var width = 320;
-	var height = 320;
-	var mapWidth = 1040;//360;
-	var mapHeight = 700;//340;
-	
-	var maxMouseMoveOffset = 10;
-	
-	var laneImg = document.getElementById("roads");
+	const width = 320;
+	const height = 320;
+	const mapWidth = 1040;//360;
+	const mapHeight = 700;//340;
+
+	let maxMouseMoveOffset = 10;
+
+	let laneImg = document.getElementById("roads");
 	laneTurnImg = document.getElementById("roads_turn");
 	carImg.push(document.getElementById("car_01x20"));
 	
-	var init = function()
+	let init = function()
 	{
 		
-		var canvas = document.getElementById("trafficCanvas");
-		var offset = $(canvas).offset();
+		let canvas = document.getElementById("trafficCanvas");
+		let offset = $(canvas).offset();
 		
-		var ctx = canvas.getContext("2d");
-		var debug = document.getElementById("debug");	
+		let ctx = canvas.getContext("2d");
+		let debug = document.getElementById("debug");	
 
-		var smoothMoveInterval = null;
-		var smoothMoveTo = new Point2d(0, 0);
-		var smoothMoveDir = null;
+		let smoothMoveInterval = null;
+		let smoothMoveTo = new Point2d(0, 0);
+		let smoothMoveDir = null;
 		
-		var mouseMoveStart = null;
+		let mouseMoveStart = null;
 		
-		var smoothMove  = function()
+		let smoothMove  = function()
 		{
 			if(smoothMoveInterval && smoothMoveDir)
 			{
@@ -47,7 +47,7 @@ $(function()
 				if(leftTop.eq(smoothMoveTo))
 					clearInterval(smoothMoveInterval);
 			}
-		}
+		};
 		
 		$(canvas).mousemove(function(e)
 		{
@@ -63,7 +63,7 @@ $(function()
 			prevMousePos.y = e.pageY;
 		});
 		
-		$(canvas).click(function(e)
+		$(canvas).click(function()
 		{			
 			smoothMoveTo = new Point2d(leftTop.x, leftTop.y);
 			/*****************/	
@@ -83,24 +83,20 @@ $(function()
 			
 			smoothMoveDir = smoothMoveTo.minus(leftTop).mult(1/5).round();
 			smoothMoveTo = smoothMoveDir.mult(5).round().plus(leftTop);
-			
-			//alert(leftTop.y + ' |-> ' + smoothMoveTo.y + ' |-> ' + smoothMoveDir.y)
-			
+
 			mouseMoveStart = null;
 			
 			smoothMoveInterval = setInterval(smoothMove, 30);
-			
 		});
 		
 		$(canvas).mousewheel(function(e, delta)
 		{
-			var oldZoom = zoom;
-			zoomChange = (delta > 0) ? 3/2 : 3/4;
+			let oldZoom = zoom;
+			const zoomChange = (delta > 0) ? 3/2 : 3/4;
 			zoom = Math.max(Math.min(zoom*zoomChange, 3.375), 1);
 			e.stopPropagation();
 			e.preventDefault();
-			
-			//alert((e.pageX - offset.left)/zoom*delta)
+
 			if(oldZoom != zoom)
 			{
 				leftTop.x = setMouseMoveX(leftTop.x - (e.pageX - offset.left - leftTop.x)*(zoomChange - 1), 0, canvas.width - mapWidth*zoom);// - prevMousePos.x;
@@ -108,17 +104,12 @@ $(function()
 				debug.innerHTML = leftTop.x + ', ' + leftTop.y;
 			}
 		});
-		/*laneImg.style.width = laneSize + "px";
-		laneImg.style.height = laneSize + "px";
 		
-		laneTurnImg.style.width = laneSize + "px";
-		laneTurnImg.style.height = laneSize + "px";*/
-		
-		var setMouseMoveX = function(x, min, max)
+		let setMouseMoveX = function(x, min, max)
 		{
 			return Math.max(Math.min(Math.round(x), min), max);
 		};
-		var setMouseMoveY = function(y, min, max)
+		let setMouseMoveY = function(y, min, max)
 		{
 			return Math.max(Math.min(Math.round(y), min), max);
 		};
@@ -126,7 +117,7 @@ $(function()
 		
 		/*********************/
 		/*********************/
-		var roads = [], road = [], lanes = [], roadDir = [];
+		let roads = [], lanes = [], roadDir = [];
 		/***********<**********/
 		lanes.push( { start : new Point2d(laneSize/2, laneSize/2), end : new Point2d(width - laneSize/2, laneSize/2), size : laneSize, img : laneImg } );
 		lanes.push( { start : new Point2d(/*laneSize +*/ laneSize/2, laneSize + laneSize/2), end : new Point2d(width /*- laneSize*/ - laneSize/2, laneSize + laneSize/2), size : laneSize, img : laneImg } );
@@ -137,7 +128,7 @@ $(function()
 		roadDir.push( { dir : 1, lanes : lanes } );
 		roads.push( new Road(roadDir) );
 		/**********V***********/
-		roadDir = [], lanes = [];
+		roadDir = lanes = [];
 		lanes.push( { start : new Point2d(laneSize/2, laneSize/2), end : new Point2d(laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
 		lanes.push( { start : new Point2d(laneSize + laneSize/2, /*laneSize +*/ laneSize/2), end : new Point2d(laneSize + laneSize/2, height /*- laneSize*/ - laneSize/2), size : laneSize, img : laneImg } );
 		roadDir.push( { dir : 1, lanes : lanes } );
@@ -147,7 +138,7 @@ $(function()
 		roadDir.push( { dir : -1, lanes : lanes } );
 		roads.push( new Road(roadDir) );
 		/**********>***********/
-		roadDir = [], lanes = [];
+		roadDir = lanes = [];
 		lanes.push( { start : new Point2d(laneSize/2, height - laneSize/2), end : new Point2d(width - laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
 		lanes.push( { start : new Point2d(/*laneSize +*/ laneSize/2, height - laneSize - laneSize/2), end : new Point2d(width /*- laneSize*/ - laneSize/2, height - laneSize - laneSize/2), size : laneSize, img : laneImg } );
 		roadDir.push( { dir : 1, lanes : lanes } );
@@ -157,7 +148,7 @@ $(function()
 		roadDir.push( { dir : -1, lanes : lanes } );
 		roads.push( new Road(roadDir) );
 		/**********^***********/
-		roadDir = [], lanes = [];
+		roadDir = lanes = [];
 		lanes.push( { start : new Point2d(width + laneSize/2, 2*laneSize + laneSize/2), end : new Point2d(width + laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
 		lanes.push( { start : new Point2d(width - laneSize/2, laneSize/2), end : new Point2d(width - laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
 		lanes.push( { start : new Point2d(width - laneSize - laneSize/2, /*laneSize +*/ laneSize/2), end : new Point2d(width - laneSize - laneSize/2, height /*- laneSize*/ - laneSize/2), size : laneSize, img : laneImg } );
@@ -169,7 +160,7 @@ $(function()
 		roads.push( new Road(roadDir) );
 		/**********^***********/
 		/**********^***********/
-		roadDir = [], lanes = [];
+		roadDir = lanes = [];
 		lanes.push( { start : new Point2d(width/2 + laneSize/2, laneSize/2), end : new Point2d(width/2 + laneSize/2, 2*height + laneSize/2), size : laneSize, img : laneImg } );
 		roadDir.push( { dir : -1, lanes : lanes } );
 		lanes = [];
@@ -177,7 +168,7 @@ $(function()
 		roadDir.push( { dir : 1, lanes : lanes } );
 		roads.push( new Road(roadDir) );
 		/**********^***********/
-		roadDir = [], lanes = [];
+		roadDir = lanes = [];
 		lanes.push( { start : new Point2d(laneSize/2, height/2 + laneSize/2), end : new Point2d(3*width + laneSize + laneSize/2, height/2 + laneSize/2), size : laneSize, img : laneImg } );
 		roadDir.push( { dir : 1, lanes : lanes } );
 		lanes = [];
@@ -185,7 +176,7 @@ $(function()
 		roadDir.push( { dir : -1, lanes : lanes } );
 		roads.push( new Road(roadDir) );
 		/**********^***********/
-		roadDir = [], lanes = [];
+		roadDir = lanes = [];
 		lanes.push( { 	start : new Point2d(3*width + 2*laneSize + laneSize/2, height/2 - laneSize/2), 
 						end : 	new Point2d(3*width + 2*laneSize + laneSize/2, 2*height + laneSize + laneSize/2), 
 						size : laneSize, img : laneImg } );
@@ -197,7 +188,7 @@ $(function()
 		roadDir.push( { dir : 1, lanes : lanes } );
 		roads.push( new Road(roadDir) );
 		/**********^***********/
-		roadDir = [], lanes = [];
+		roadDir = lanes = [];
 		lanes.push( { 	start : new Point2d(width/2 + laneSize/2, 2*height + laneSize/2), 
 						end : 	new Point2d(3*width + laneSize + laneSize/2, 2*height + laneSize/2), 
 						size : laneSize, img : laneImg } );
@@ -212,14 +203,14 @@ $(function()
 		
 		/*******************************/
 		/********crossroads*************/
-		for (var i = 0; i < roads.length; i++)
-			for (var j = i + 1; j < roads.length; j++)
+		for (let i = 0; i < roads.length; i++)
+			for (let j = i + 1; j < roads.length; j++)
 			{
-				for (var l = 0; l < roads[i].lanes.length; l++)
-					for (var k = 0; k < roads[j].lanes.length; k++)
+				for (let l = 0; l < roads[i].lanes.length; l++)
+					for (let k = 0; k < roads[j].lanes.length; k++)
 					{
-						for (var m = 0; m < roads[i].lanes[l].sections.length; m++)
-							for (var n = 0; n < roads[j].lanes[k].sections.length; n++)
+						for (let m = 0; m < roads[i].lanes[l].sections.length; m++)
+							for (let n = 0; n < roads[j].lanes[k].sections.length; n++)
 							{
 								if(roads[i].lanes[l].sections[m].center.eq(roads[j].lanes[k].sections[n].center) /*&& (n < roads[j].lanes[k].sections.length - 1)*/ )
 								{
@@ -358,21 +349,22 @@ $(function()
 					}
 			}
 		
-		for (var i = 0; i < roads.length; i++)
+		for (let i = 0; i < roads.length; i++)
 			roads[i].calcMarkings(ctx);
 		
 		/*******************************/
-		for (var i = 0; i < roads.length; i++)
+		for (let i = 0; i < roads.length; i++)
 		{
-			document.getElementById("debug" + i).innerHTML += "road " + i + "<br />";
-			for (var l = 0; l < roads[i].lanes.length; l++)
+			let curDebug = document.getElementById("debug" + i);
+			curDebug.innerHTML += "road " + i + "<br />";
+			for (let l = 0; l < roads[i].lanes.length; l++)
 			{
-				document.getElementById("debug" + i).innerHTML += "lane " + l + "<br />";
-				for (var m = 0; m < roads[i].lanes[l].sections.length; m++)
+				curDebug.innerHTML += "lane " + l + "<br />";
+				for (let m = 0; m < roads[i].lanes[l].sections.length; m++)
 				{
-					document.getElementById("debug" + i).innerHTML +=  "section " + m + " (" + roads[i].lanes[l].sections[m].center.x + "," + roads[i].lanes[l].sections[m].center.y + ")<br />";
+					curDebug.innerHTML +=  "section " + m + " (" + roads[i].lanes[l].sections[m].center.x + "," + roads[i].lanes[l].sections[m].center.y + ")<br />";
 					if (roads[i].lanes[l].sections[m].crossDir)
-						document.getElementById("debug" + i).innerHTML +=  "-> " + roads[i].lanes[l].sections[m].crossSectionNum + " (" + roads[i].lanes[l].sections[m].crossDir.x + "," + roads[i].lanes[l].sections[m].crossDir.y + " | right: " + roads[i].lanes[l].sections[m].rightDir.x + "," + roads[i].lanes[l].sections[m].rightDir.y + " | left: " + roads[i].lanes[l].sections[m].leftDir.x + "," + roads[i].lanes[l].sections[m].leftDir.y + ")<br />";
+						curDebug.innerHTML +=  "-> " + roads[i].lanes[l].sections[m].crossSectionNum + " (" + roads[i].lanes[l].sections[m].crossDir.x + "," + roads[i].lanes[l].sections[m].crossDir.y + " | right: " + roads[i].lanes[l].sections[m].rightDir.x + "," + roads[i].lanes[l].sections[m].rightDir.y + " | left: " + roads[i].lanes[l].sections[m].leftDir.x + "," + roads[i].lanes[l].sections[m].leftDir.y + ")<br />";
 				}
 			}
 		}
@@ -384,9 +376,9 @@ $(function()
 				point = new Point2d(10, 10);
 			if(point)
 			{
-				for (var i = 0; i < roads.length; i++)
-					for (var j = 0; j < roads[i].lanes.length; j++)
-						for (var k = 0; k < roads[i].lanes[j].sections.length; k++)
+				for (let i = 0; i < roads.length; i++)
+					for (let j = 0; j < roads[i].lanes.length; j++)
+						for (let k = 0; k < roads[i].lanes[j].sections.length; k++)
 							if(point.eq(roads[i].lanes[j].sections[k].center))
 							{
 								vehicles.push(new Vehicle( { img : carImg[0], section : roads[i].lanes[j].sections[k], size : new Point2d(laneSize, laneSize) } ));
@@ -399,17 +391,17 @@ $(function()
 			return false;
 		}
 		/********************************************/
-		var vehicles = [], veh = null;
-		var vehCnt = 0;
-		var interval = setInterval(add_vehicle, 2000);
+		let vehicles = [];
+		let vehCnt = 0;
+		let interval = setInterval(add_vehicle, 2000);
 		add_vehicle();
 		/********************************************/
 		/********************************************/
 		
-		var updateContent = function()
+		let updateContent = function()
 		{
-			var badVeh = [];
-			for (var i = 0; i < vehicles.length; i++)
+			let badVeh = [];
+			for (let i = 0; i < vehicles.length; i++)
 				if(vehicles[i])
 				{
 					vehicles[i].updatePos();
@@ -417,7 +409,7 @@ $(function()
 						badVeh.push(i);
 				}
 			/********/
-			for (var i = 0; i < badVeh.length; i++)
+			for (let i = 0; i < badVeh.length; i++)
 			{
 				vehicles.splice(badVeh[i] - i, 1);				
 				add_vehicle(new Point2d(laneSize/2, laneSize/2));
@@ -425,29 +417,29 @@ $(function()
 			/*************************/
 			/*************************/
 			drawContent();
-		}
+		};
 		
-		var drawContent = function()
+		let drawContent = function()
 		{
 			clear();
-			/*for (var i = 0; i < roads.length; i++)
+			/*for (let i = 0; i < roads.length; i++)
 				roads[i].draw(ctx);*/
-			/*for (var i = 0; i < roads.length; i++)
+			/*for (let i = 0; i < roads.length; i++)
 				roads[i].drawCorners(ctx);*/
-			for (var i = 0; i < roads.length; i++)
+			for (let i = 0; i < roads.length; i++)
 				roads[i].drawSections(ctx);
-			for (var i = 0; i < roads.length; i++)
+			for (let i = 0; i < roads.length; i++)
 				roads[i].drawCrosses(ctx);
-			for (var i = 0; i < roads.length; i++)
+			for (let i = 0; i < roads.length; i++)
 				roads[i].drawMarkings(ctx);
 			/**********************************/	
 			/**********************************/	
-			for (var i = 0; i < vehicles.length; i++)
+			for (let i = 0; i < vehicles.length; i++)
 				if(vehicles[i])
 					vehicles[i].draw(ctx);
-		}
+		};
 		/******************/
-		var clear = function()
+		let clear = function()
 		{
 			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 			ctx.fillStyle = "#000000";
@@ -455,7 +447,7 @@ $(function()
 		};	
 		
 		setInterval(updateContent, frequency);
-	}
+	};
 	init();
 });
 
@@ -466,24 +458,24 @@ function Vehicle(params)
 {
 	this.img = params.img;
 
-	this.maxSpeed = params.speed ? params.speed : getRandomArbitary(45*km_h2px_s, 60*km_h2px_s); // 15 - 20 km/h
+	this.maxSpeed = params.speed ? params.speed : getRandomArbitary(45, 60) * km_h2px_s; // 15 - 20 km/h
 	this.speed = this.maxSpeed;
-	this.freqSpeed = frequency/30;
-	this.fps = 1000/frequency;
-	this.realSpeed = this.freqSpeed*this.speed;
-	this.speedPerFrame = this.speed/this.fps;
-	//alert(this.speedPerFrame)
+	//this.freqSpeed = frequency / 30;
+	this.fps = 1000 / frequency;
+	//this.realSpeed = this.freqSpeed * this.speed;
+	this.speedPerFrame = this.speed / this.fps;
+
 	this.curNeededSpeed = 0;
 
 	this.section = params.section;	
 	this.pos = new Point2d(this.section.center.x, this.section.center.y);
 	this.curPos = new Point2d(this.pos.x, this.pos.y);	
-	this.dir = this.section.dir;//.mult(this.realSpeed);
+	this.dir = this.section.dir;
 	this.type = 3;
 	
 	this.sensRadius = 8;
-	this.acceleration = getRandomArbitary(100/15*km_h2px_s, 100/10*km_h2px_s); // t = 15 & 10 sec - time to reach 100 km/h
-	this.deceleration = getRandomArbitary(100/10*km_h2px_s, 100/5*km_h2px_s);
+	this.acceleration = getRandomArbitary(100 / 15, 100 / 10) * km_h2px_s; // t = 15 & 10 sec - time to reach 100 km/h
+	this.deceleration = getRandomArbitary(100 / 10, 100 / 5) * km_h2px_s;
 	
 	this.size = params.size;	
 
@@ -502,8 +494,8 @@ function Vehicle(params)
 /***********************************/
 Vehicle.prototype.init = function()
 {
-	var section = this.section;
-	for (var i = 0; i < this.sensRadius; i++)
+	let section = this.section;
+	for (let i = 0; i < this.sensRadius; i++)
 	{
 		if( section.crossSection && ( !section.next || (Math.random() > 0.8) ) )
 		{
@@ -537,9 +529,9 @@ Vehicle.prototype.init = function()
 /***********************************/
 Vehicle.prototype.getDistance2turn = function(crossSection)
 {
-	var section = (this.crossSections.length) ? this.crossSections[this.crossSections.length - 1].section.next : this.section.next;
+	let section = (this.crossSections.length) ? this.crossSections[this.crossSections.length - 1].section.next : this.section.next;
 	
-	for (var i = 0; i < this.sensRadius; i++)
+	for (let i = 0; i < this.sensRadius; i++)
 	{
 		if(section.crossSection == crossSection)
 			return (i + 1)*laneSize;
@@ -554,7 +546,7 @@ Vehicle.prototype.getDistance2turn = function(crossSection)
 	}
 	
 	return 0;
-}
+};
 /***********************************/
 Vehicle.prototype.draw = function(ctx)
 {
@@ -571,7 +563,7 @@ Vehicle.prototype.draw = function(ctx)
 			ctx.strokeRect((this.section.center.x - this.section.size/2)*zoom + leftTop.x, (this.section.center.y - this.section.size/2)*zoom + leftTop.y, laneSize*zoom, laneSize*zoom);
 		}
 		
-		for(var i = 0, len = this.crossSections.length; i < len; i++)
+		for(let i = 0, len = this.crossSections.length; i < len; i++)
 		{
 			ctx.strokeStyle = "#00ff00";
 			ctx.strokeRect((this.crossSections[i].section.center.x - this.crossSections[i].section.size/2)*zoom + leftTop.x, (this.crossSections[i].section.center.y - this.crossSections[i].section.size/2)*zoom + leftTop.y, laneSize*zoom, laneSize*zoom);
@@ -636,36 +628,36 @@ Vehicle.prototype.updatePos = function()
 		}
 	}
 	
-	var dir = this.dir.mult(this.speedPerFrame);
-	var crossSpeed = 10*km_h2px_s; // 10 km/h
+	let dir = this.dir.mult(this.speedPerFrame);
+	let crossSpeed = 10*km_h2px_s; // 10 km/h
 	
 	
-	//var distance2brake = (Math.pow(this.speed, 2) - Math.pow(0.5, 2))/this.deceleration; // 0.5 = 15 km/h
+	//let distance2brake = (Math.pow(this.speed, 2) - Math.pow(0.5, 2))/this.deceleration; // 0.5 = 15 km/h
 	
 	this.curPos	= this.curPos.plus(dir);
 	this.pos = this.curPos.round(3);
 	if(this.crossSections.length)
 	{
 		this.crossSections[0].distance -= Math.abs(dir.x) + Math.abs(dir.y);
-		this.curNeededSpeed = Math.sqrt(Math.pow(crossSpeed, 2) + 2*this.crossSections[0].distance*this.deceleration);
+		this.curNeededSpeed = Math.sqrt(Math.pow(crossSpeed, 2) + 2 * this.crossSections[0].distance * this.deceleration);
 		
 		if(this.speed >= this.curNeededSpeed)
 		{
-			this.speed = Math.max(crossSpeed, this.speed - this.deceleration/this.fps);
-			this.realSpeed = this.freqSpeed*this.speed;
-			this.speedPerFrame = this.speed/this.fps;
+			this.speed = Math.max(crossSpeed, this.speed - this.deceleration / this.fps);
+			//this.realSpeed = this.freqSpeed*this.speed;
+			this.speedPerFrame = this.speed / this.fps;
 		}
 		else
 		{
-			this.speed = Math.min(this.maxSpeed, this.speed + this.acceleration/this.fps);
-			this.speedPerFrame = this.speed/this.fps;
+			this.speed = Math.min(this.maxSpeed, this.speed + this.acceleration / this.fps);
+			this.speedPerFrame = this.speed / this.fps;
 		}
 			//this.deceleration
 	}
 	else
 	{
-		this.speed = Math.min(this.maxSpeed, this.speed + this.acceleration/this.fps);
-		this.speedPerFrame = this.speed/this.fps;
+		this.speed = Math.min(this.maxSpeed, this.speed + this.acceleration / this.fps);
+		this.speedPerFrame = this.speed / this.fps;
 	}
 	//document.getElementById("debug").innerHTML = "(" + this.pos.x + ", " + this.pos.y + ") " + document.getElementById("debug").innerHTML;
 };
@@ -688,11 +680,11 @@ function Road(dirs)
 {
 	this.dirs = {};
 	this.lanes = [];
-	for (var i = 0; i < dirs.length; i++)
+	for (let i = 0; i < dirs.length; i++)
 	{
-		var lanes = [];		
-		var lane = {};
-		for (var j = 0; j < dirs[i].lanes.length; j++)
+		let lanes = [];		
+		let lane = {};
+		for (let j = 0; j < dirs[i].lanes.length; j++)
 		{			
 			lane = new Lane(dirs[i].lanes[j], dirs[i].dir, j);
 			lanes.push(lane);
@@ -708,11 +700,11 @@ function Road(dirs)
 //****************************************
 Road.prototype.initSectionSiblings = function()
 {
-	for (var i = 0; i < this.lanes.length; i++)
-		for (var k = 0; k < this.lanes[i].sections.length; k++)
+	for (let i = 0; i < this.lanes.length; i++)
+		for (let k = 0; k < this.lanes[i].sections.length; k++)
 		{
-			for (var j = i + 1; j < this.lanes.length; j++)
-				for (var l = 0; l < this.lanes[j].sections.length; l++)
+			for (let j = i + 1; j < this.lanes.length; j++)
+				for (let l = 0; l < this.lanes[j].sections.length; l++)
 				{
 					if(this.lanes[i].sections[k].isRightSibling(this.lanes[j].sections[l])) // right sibling
 					{
@@ -737,15 +729,15 @@ Road.prototype.initSectionSiblings = function()
 				}
 		}
 	this.calcSectionSiblingsCnt();
-}
+};
 //****************************************
 Road.prototype.calcSectionSiblingsCnt = function()
 {
-	for (var i = 0; i < this.lanes.length; i++)
-		for (var k = 0; k < this.lanes[i].sections.length; k++)
+	for (let i = 0; i < this.lanes.length; i++)
+		for (let k = 0; k < this.lanes[i].sections.length; k++)
 		{
-			var rightLane = this.lanes[i].sections[k].right;
-			var rightLaneCnt = 1;
+			let rightLane = this.lanes[i].sections[k].right;
+			let rightLaneCnt = 1;
 			while(rightLane != null)
 			{
 				rightLaneCnt++;
@@ -755,9 +747,9 @@ Road.prototype.calcSectionSiblingsCnt = function()
 			this.lanes[i].sections[k].rightCnt = rightLaneCnt;
 			
 			/**********************/
-			var leftLane = this.lanes[i].sections[k].left;
-			var leftLaneCnt = 1;
-			var curDir = this.lanes[i].sections[k].dir; //направление ряда, с которого проверяется поворот
+			let leftLane = this.lanes[i].sections[k].left;
+			let leftLaneCnt = 1;
+			let curDir = this.lanes[i].sections[k].dir; //направление ряда, с которого проверяется поворот
 			while(leftLane != null)
 			{
 				leftLaneCnt++;
@@ -769,64 +761,64 @@ Road.prototype.calcSectionSiblingsCnt = function()
 			
 			this.lanes[i].sections[k].leftCnt = leftLaneCnt;
 		}
-}
+};
 //****************************************
 Road.prototype.draw = function(ctx)
 {
 	//lanes
-	for (var i in this.dirs)
-		for (var j = 0; j < this.dirs[i].lanes.length; j++)
+	for (let i in this.dirs)
+		for (let j = 0; j < this.dirs[i].lanes.length; j++)
 		{
 			this.dirs[i].lanes[j].draw(ctx);
 		}
-}
+};
 //****************************************
 Road.prototype.calcMarkings = function(ctx)
 {
 	//Markings
-	for (var i in this.dirs)
-		for (var j = 0; j < this.dirs[i].lanes.length; j++)
+	for (let i in this.dirs)
+		for (let j = 0; j < this.dirs[i].lanes.length; j++)
 		{
 			this.dirs[i].lanes[j].calcSectionsMarkings(ctx);	
 		}
-}
+};
 //****************************************
 Road.prototype.drawMarkings = function(ctx)
 {
-	for (var i in this.dirs)
-		for (var j = 0; j < this.dirs[i].lanes.length; j++)
+	for (let i in this.dirs)
+		for (let j = 0; j < this.dirs[i].lanes.length; j++)
 		{
 			this.dirs[i].lanes[j].drawSectionsMarkings(ctx);	
 		}
-}
+};
 //****************************************
 Road.prototype.drawCentralLane = function(ctx)
 {	
 	//CentralLane - dotted
-	for (var i in this.dirs)
-		for (var j = 0; j < this.dirs[i].lanes.length; j++)
+	for (let i in this.dirs)
+		for (let j = 0; j < this.dirs[i].lanes.length; j++)
 		{
 			this.dirs[i].lanes[j].drawCentralLane(ctx);
 		}
-}
+};
 //****************************************
 Road.prototype.drawSections = function(ctx)
 {	
-	for (var i in this.dirs)
-		for (var j = 0; j < this.dirs[i].lanes.length; j++)
+	for (let i in this.dirs)
+		for (let j = 0; j < this.dirs[i].lanes.length; j++)
 		{
 			this.dirs[i].lanes[j].drawSections(ctx);
 		}
-}
+};
 //****************************************
 Road.prototype.drawCrosses = function(ctx)
 {	
-	for (var i in this.dirs)
-		for (var j = 0; j < this.dirs[i].lanes.length; j++)
+	for (let i in this.dirs)
+		for (let j = 0; j < this.dirs[i].lanes.length; j++)
 		{
 			this.dirs[i].lanes[j].drawCrosses(ctx);
 		}
-}
+};
 
 //****************************************
 //********LANE CLS************************
@@ -849,17 +841,17 @@ function Lane(params, dir, num)
 	this.dir = new Point2d( (this.type == "v") ? 0 : dir, (this.type == "v") ? dir : 0 );
 	this.size = params.size;
 	this.num = num;
-	this.dirNum = dir;
+	//this.dirNum = dir;
 	
 	this.width = Math.abs(this.end.x - this.start.x) + this.size;
 	this.height = Math.abs(this.end.y - this.start.y) + this.size;
 	
 	this.startOffset = new Point2d(-this.size/2, -this.size/2);
 	
-	this.laneStartOffset = new Point2d(-this.size/2, -this.size/2);
-	this.laneEndOffset = new Point2d( ( (this.type == "v") ? -1 : 1 )*this.size/2, ( (this.type == "v") ? 1 : -1 )*this.size/2);
+	//this.laneStartOffset = new Point2d(-this.size/2, -this.size/2);
+	//this.laneEndOffset = new Point2d( ( (this.type == "v") ? -1 : 1 )*this.size/2, ( (this.type == "v") ? 1 : -1 )*this.size/2);
 	
-	this.fillStyle = (dir == 1) ? "#FF0000" : "#0000FF";
+	//this.fillStyle = (dir == 1) ? "#FF0000" : "#0000FF";
 	this.color2 = (dir == 1) ? "#000088" : "#0000FF";
 	this.color1 = (dir == 1) ? "#0000FF" : "#000088";
 	
@@ -872,9 +864,9 @@ function Lane(params, dir, num)
 //****************************************
 Lane.prototype.initSections = function(img)
 {	
-	var point = this.start;
-	var plusdDir = new Point2d(this.dir.x*this.size, this.dir.y*this.size);
-	var num = 0;
+	let point = this.start;
+	let plusdDir = new Point2d(this.dir.x*this.size, this.dir.y*this.size);
+	let num = 0;
 	
 	while (!point.eq(this.end))
 	{
@@ -884,69 +876,69 @@ Lane.prototype.initSections = function(img)
 	this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, num: num++, lane :  this  } ) );
 	
 	/****************************/
-	for (var i = 0; i < this.sections.length; i++)
+	for (let i = 0; i < this.sections.length; i++)
 	{
 		if(i)
 			this.sections[i].prev = this.sections[i - 1];
 		if(i < this.sections.length - 1)
 			this.sections[i].next = this.sections[i + 1];		
 	}
-}
+};
 //****************************************
 Lane.prototype.draw = function(ctx)
 {
 	//ctx.fillStyle = this.fillStyle;
 	
-	var start = this.start.offset(this.startOffset);
+	let start = this.start.offset(this.startOffset);
 	
-	var grad = ctx.createLinearGradient(start.x, start.y, this.width, this.height);
+	let grad = ctx.createLinearGradient(start.x, start.y, this.width, this.height);
 	grad.addColorStop(0, this.color1);
 	grad.addColorStop(1, this.color2);
 	ctx.fillStyle = grad;
 	
 	ctx.fillRect(start.x, start.y, this.width, this.height);
-}
+};
 //****************************************
 Lane.prototype.drawCentralLane = function(ctx)
 {	
 	ctx.strokeStyle = "#0000ff";
-	ctx.setLineDash([1, 4])
+	ctx.setLineDash([1, 4]);
 	
 	ctx.beginPath();
 	ctx.moveTo(this.start.x, this.start.y);
 	ctx.lineTo(this.end.x, this.end.y);
 	ctx.stroke();
 
-}
+};
 //****************************************
 Lane.prototype.drawSections = function(ctx)
 {	
-	for (var i = 0; i < this.sections.length; i++)
+	for (let i = 0; i < this.sections.length; i++)
 		this.sections[i].draw(ctx);
-}
+};
 //****************************************
 Lane.prototype.drawCrosses = function(ctx)
 {		
 	ctx.globalAlpha = 0.2;
 	ctx.fillStyle =  "#ff00ff";
-	for (var i = 0; i < this.sections.length; i++)
+	for (let i = 0; i < this.sections.length; i++)
 		this.sections[i].drawCrosses(ctx);
 	ctx.globalAlpha = 1;
 
-}
+};
 //****************************************
 Lane.prototype.drawSectionsMarkings = function(ctx)
 {
-	for (var i = 0; i < this.sections.length; i++)
+	for (let i = 0; i < this.sections.length; i++)
 		this.sections[i].drawMarkings(ctx);
-}
+};
 //****************************************
 Lane.prototype.calcSectionsMarkings = function(ctx)
 {
-	for (var i = 1; i < this.sections.length - 1; i++)
+	for (let i = 1; i < this.sections.length - 1; i++)
 	{
-		var endCrossesLanesCnt = (this.sections[i].crossSection && this.sections[i].right) ? this.sections[i].crossSection.rightCnt : 0;
-		var startCrossesLanesCnt = (this.sections[i].crossInSection && this.sections[i].right) ? this.sections[i].crossInSection.rightCnt : 0;
+		let endCrossesLanesCnt = (this.sections[i].crossSection && this.sections[i].right) ? this.sections[i].crossSection.rightCnt : 0;
+		let startCrossesLanesCnt = (this.sections[i].crossInSection && this.sections[i].right) ? this.sections[i].crossInSection.rightCnt : 0;
 		
 		if( (i > startCrossesLanesCnt) && (i < this.sections.length - endCrossesLanesCnt) )
 		{
@@ -979,7 +971,7 @@ Lane.prototype.calcSectionsMarkings = function(ctx)
 		
 		if ( this.sections[i + 1].crossSection ) //если на следующей секции поворот налево
 		{		
-			var crossRightCnt = this.sections[i + 1].crossSection.rightCnt;
+			let crossRightCnt = this.sections[i + 1].crossSection.rightCnt;
 			if(crossRightCnt == this.sections[i + 1].rightCnt)
 				if( (i + crossRightCnt == this.sections.length - 1) && (this.sections[i + 1].crossSectionNum == crossRightCnt - 1) )
 					this.sections[i + 1].calcCorner(ctx);
@@ -1012,20 +1004,20 @@ Lane.prototype.calcSectionsMarkings = function(ctx)
 		if(!this.sections[0].prev && this.sections[0].left.prev) //расширение
 			this.sections[0].calcNewRightLane(ctx, true);
 	}	
-	var last = this.sections.length - 1;
+	let last = this.sections.length - 1;
 	if (!this.sections[last].right && this.sections[last].left && this.sections[last].left.dir.eq(this.sections[last].dir)) //если это потенциальный правый ряд с сужением или расширением
 	{		
 		if(!this.sections[last].next && this.sections[last].left.next) //сужение
 			this.sections[last].calcNewRightLane(ctx, false);
 	}
-}
+};
 //****************************************
 Lane.prototype.getSections = function()
 {
-	var sections = [];
-	var point = this.start;
-	var plusdDir = (this.start.x == this.end.x) ? new Point2d(1, 0) : new Point2d(0, 1);
-	var num = 0;
+	let sections = [];
+	let point = this.start;
+	let plusdDir = (this.start.x == this.end.x) ? new Point2d(1, 0) : new Point2d(0, 1);
+	let num = 0;
 	
 	while (!point.eq(this.end))
 	{
@@ -1034,7 +1026,7 @@ Lane.prototype.getSections = function()
 	}
 	
 	return sections;
-}
+};
 //****************************************
 //*********SECTION CLS********************
 //****************************************
@@ -1051,9 +1043,9 @@ function Section(params)
 	this.maxSpeed = 2; // 1px/sec = 30km/h => maxSpeed = 60km/h
 	
 	/******uses to calc right and left directions******/
-	var corner = (this.dir.x) ? Math.acos(this.dir.x) : Math.asin(this.dir.y);
-	var markRightDir = new Point2d(Math.round(Math.cos(corner + Math.PI*3/4)), Math.round(Math.sin(corner + Math.PI*3/4)));
-	var markLeftDir = new Point2d(Math.round(Math.cos(corner - Math.PI*3/4)), Math.round(Math.sin(corner - Math.PI*3/4)));
+	let corner = (this.dir.x) ? Math.acos(this.dir.x) : Math.asin(this.dir.y);
+	let markRightDir = new Point2d(Math.round(Math.cos(corner + Math.PI*3/4)), Math.round(Math.sin(corner + Math.PI*3/4)));
+	let markLeftDir = new Point2d(Math.round(Math.cos(corner - Math.PI*3/4)), Math.round(Math.sin(corner - Math.PI*3/4)));
 	
 	/*******normalized right and left directions******/
 	this.rightDir = new Point2d(Math.round(Math.cos(corner + Math.PI/2)), Math.round(Math.sin(corner + Math.PI/2)));
@@ -1105,12 +1097,12 @@ function Section(params)
 Section.prototype.isRightSibling = function(section)
 {
 	return this.center.plus(this.rightDir.mult(this.size)).eq(section.center);
-}
+};
 //****************************************
 Section.prototype.isLeftSibling = function(section)
 {
 	return this.center.plus(this.leftDir.mult(this.size)).eq(section.center);
-}
+};
 //****************************************
 Section.prototype.draw = function(ctx)
 {
@@ -1120,14 +1112,14 @@ Section.prototype.draw = function(ctx)
 	{
 		if(!this.crossInSection || this.prev)
 		{
-			var start = this.center.plus(new Point2d(-this.size/2, -this.size/2));
+			let start = this.center.plus(new Point2d(-this.size/2, -this.size/2));
 			//ctx.drawImage(this.img, start.x, start.y);
 			ctx.drawImage(this.img, 0, 0, this.size, this.size, start.x*zoom + leftTop.x, start.y*zoom + leftTop.y, this.size*zoom, this.size*zoom);
 		}
 	}
 	else if(this.markingCorner.imgLeft)
 		ctx.drawImage(this.img, laneSize, laneSize*this.markingCorner.imgLeft.type, this.size, this.size, this.markingCorner.imgLeft.pos.x*zoom + leftTop.x, this.markingCorner.imgLeft.pos.y*zoom + leftTop.y, this.size*zoom, this.size*zoom);
-}
+};
 //****************************************
 Section.prototype.drawMarkings = function(ctx)
 {	
@@ -1142,7 +1134,7 @@ Section.prototype.drawMarkings = function(ctx)
 		
 	if(this.markingCorner)
 		this.drawCorner(this.markingCorner, ctx);
-}
+};
 //****************************************
 Section.prototype.drawMarkingLine = function(line, ctx)
 {	
@@ -1154,7 +1146,7 @@ Section.prototype.drawMarkingLine = function(line, ctx)
 	ctx.moveTo(line.from.x*zoom + leftTop.x, line.from.y*zoom + leftTop.y);
 	ctx.lineTo(line.to.x*zoom + leftTop.x, line.to.y*zoom + leftTop.y);
 	ctx.stroke();
-}
+};
 //****************************************
 Section.prototype.drawCorner = function(turn, ctx)
 {		
@@ -1170,17 +1162,17 @@ Section.prototype.drawCorner = function(turn, ctx)
 	ctx.moveTo(turn.from.x*zoom + leftTop.x, turn.from.y*zoom + leftTop.y);  
 	ctx.arcTo(turn.corner.x*zoom + leftTop.x, turn.corner.y *zoom+ leftTop.y, turn.to.x*zoom + leftTop.x, turn.to.y*zoom + leftTop.y, turn.rad*zoom);
 	ctx.stroke();
-}
+};
 //****************************************
 Section.prototype.calcLanesMarkings = function(ctx)
 {	
 	this.markingRight = { from : this.markingRightStart, to : this.markingRightEnd, lineDash : (this.right) ? [5] : []  };
-}
+};
 //****************************************
 Section.prototype.calcSepMarkings = function(ctx)
 {	
 	this.markingLeft = { from : this.markingLeftStart, to : this.markingLeftEnd, lineDash : [] };
-}
+};
 //****************************************
 Section.prototype.calcNewRightLane = function(ctx, start)
 {	
@@ -1188,7 +1180,7 @@ Section.prototype.calcNewRightLane = function(ctx, start)
 	this.newRightLaneStart = start;
 	this.newRightLaneEnd = !start;
 	
-	var from = null, corner = null, to = null, imgLeft = {};
+	let from = null, corner = null, to = null, imgLeft = {};
 	
 	imgLeft['pos'] = this.center.minus(new Point2d(this.size/2, this.size/2));
 	
@@ -1226,13 +1218,13 @@ Section.prototype.calcNewRightLane = function(ctx, start)
 	}
 	
 	this.markingCorner = { from : from, corner : corner, to : to, rad : rad, imgLeft : imgLeft, lineDash : [] };
-}
+};
 //****************************************
 Section.prototype.calcCorner = function(ctx)
 {	
 	if (this.crossDir != null)
 	{
-		var from = null, corner = null, to = null, imgLeft = null, imgRight = null, rad = 0, cornType = 0;
+		let from = null, corner = null, to = null, imgLeft = null, imgRight = null, rad = 0, cornType = 0;
 		
 		if(this.crossDir.eq(this.leftDir))
 		{
@@ -1266,8 +1258,8 @@ Section.prototype.calcCorner = function(ctx)
 			rad = this.size + 2;
 			if(!this.right)
 			{
-				var angle = (this.crossSection.dir.x) ? Math.acos(this.crossSection.dir.x) : Math.asin(this.crossSection.dir.y);
-				var centerDir = new Point2d(Math.round(Math.cos(angle + Math.PI/4)), Math.round(Math.sin(angle + Math.PI/4)));
+				let angle = (this.crossSection.dir.x) ? Math.acos(this.crossSection.dir.x) : Math.asin(this.crossSection.dir.y);
+				let centerDir = new Point2d(Math.round(Math.cos(angle + Math.PI/4)), Math.round(Math.sin(angle + Math.PI/4)));
 				imgRight = {};
 				imgRight['pos'] = this.center.plus(centerDir.mult(this.size)).minus(new Point2d(this.size/2, this.size/2));
 				
@@ -1284,13 +1276,13 @@ Section.prototype.calcCorner = function(ctx)
 		
 		this.markingCorner = { from : from, corner : corner, to : to, rad : rad, imgLeft : imgLeft, imgRight : imgRight, lineDash : (this.rightCnt > 1) ? [4] : [] };
 	}
-}
+};
 //****************************************
 Section.prototype.calcSepCorner = function(ctx)
 {	
 	if (this.crossDir)
 	{
-		var from = null, corner = null, to = null, rad = 0;
+		let from = null, corner = null, to = null, rad = 0;
 		
 		if(this.crossDir.eq(this.leftDir))
 		{
@@ -1309,12 +1301,12 @@ Section.prototype.calcSepCorner = function(ctx)
 		
 		this.markingSepCorner = { from : from, corner : corner, to : to, rad : rad, lineDash : [] };
 	}
-}
+};
 //****************************************
 Section.prototype.drawCrosses = function(ctx)
 {	
 	return false;
-	var start = this.center.plus(new Point2d(-this.size/2, -this.size/2));
+	let start = this.center.plus(new Point2d(-this.size/2, -this.size/2));
 	if(this.crossDir)
 	{
 		//ctx.globalAlpha = 0.2;
@@ -1329,7 +1321,7 @@ Section.prototype.drawCrosses = function(ctx)
 		ctx.fillRect(start.x, start.y, this.size, this.size);
 	}
 	//ctx.globalAlpha = 1;
-}
+};
 //****************************************
 //********POINT2D CLS*********************
 //****************************************
@@ -1343,51 +1335,51 @@ function Point2d(x, y)
 Point2d.prototype.offset = function(offset)
 {
 	return { x : this.x + offset.x, y : this.y + offset.y };
-}
+};
 //****************************************
 Point2d.prototype.eq = function(comparePoint)
 {
 	return ( (this.x == comparePoint.x) && (this.y == comparePoint.y) )
-}
+};
 //****************************************
 Point2d.prototype.between = function(comparePoint1, comparePoint2)
 {
 	if(comparePoint1.x == comparePoint2.x)
 	{
-		var y1 = Math.min(comparePoint1.y, comparePoint2.y);
-		var y2 = Math.max(comparePoint1.y, comparePoint2.y);
+		let y1 = Math.min(comparePoint1.y, comparePoint2.y);
+		let y2 = Math.max(comparePoint1.y, comparePoint2.y);
 		return (this.y >= y1) && (this.y <= y2);
 	}
 	else if(comparePoint1.y == comparePoint2.y)
 	{
-		var x1 = Math.min(comparePoint1.x, comparePoint2.x);
-		var x2 = Math.max(comparePoint1.x, comparePoint2.x);
+		let x1 = Math.min(comparePoint1.x, comparePoint2.x);
+		let x2 = Math.max(comparePoint1.x, comparePoint2.x);
 		return (this.x >= x1) && (this.x <= x2);
 	}
 	
 	return false;
-}
+};
 //****************************************
 Point2d.prototype.plus = function(point)
 {
 	return new Point2d(this.x + point.x, this.y + point.y);
-}
+};
 //****************************************
 Point2d.prototype.minus = function(point)
 {
 	return new Point2d(this.x - point.x, this.y - point.y);
-}
+};
 //****************************************
 Point2d.prototype.mult = function(k)
 {
 	return new Point2d(Math.round(this.x*k*1000)/1000, Math.round(this.y*k*1000)/1000);
-}
+};
 //****************************************
 Point2d.prototype.round = function(digits)
 {
 	digits = (digits) ? digits : 0;
 	return new Point2d(Math.round(this.x*Math.pow(10, digits)/Math.pow(10, digits)), Math.round(this.y*Math.pow(10, digits))/Math.pow(10, digits));
-}
+};
 //****************************************
 //****************************************
 //****************************************
@@ -1398,7 +1390,7 @@ function getRandomArbitary(min, max)
 /********************/
 /*Object.prototype.clone = function() 
 {
-    var newObj = (this instanceof Array) ? [] : {};
+    let newObj = (this instanceof Array) ? [] : {};
     for (i in this) 
 	{
         if (i == 'clone') 
