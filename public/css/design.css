@@ -1,0 +1,45 @@
+#trafficCanvas{
+	border: 1px solid #000;
+}
+#debug, .debug{
+	overflow: auto;
+	border: 1px solid #000;
+	width: 380px;
+	height: 500px;
+	position: absolute;
+	left: 620px;
+	top: 10px;
+	font-size: 12px;
+}
+.debug{
+	width: 120px;
+	height: 900px;
+}
+#debug0{
+	left: 1020px;
+}
+#debug1{
+	left: 1160px;
+}
+#debug2{
+	left: 1300px;
+}
+#debug3{
+	left: 1440px;
+}
+#debug4{
+	left: 1580px;
+}
+#debug5{
+	left: 1720px;
+}
+#debug6{
+	left: 1860px;
+}
+#debug7{
+	left: 2000px;
+}
+#debug{
+	top: 720px;
+	left: 20px;
+}
