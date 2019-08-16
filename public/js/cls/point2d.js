@@ -48,11 +48,13 @@ Point2d.prototype.minus = function(point)
 //****************************************
 Point2d.prototype.mult = function(k)
 {
-	return new Point2d(Math.round(this.x*k*1000)/1000, Math.round(this.y*k*1000)/1000);
+	return new Point2d(Math.round(this.x * k * 1000) / 1000, Math.round(this.y * k * 1000) / 1000);
 };
 //****************************************
 Point2d.prototype.round = function(digits)
 {
 	digits = (digits) ? digits : 0;
-	return new Point2d(Math.round(this.x*Math.pow(10, digits)/Math.pow(10, digits)), Math.round(this.y*Math.pow(10, digits))/Math.pow(10, digits));
+	let roundDigits = Math.pow(10, digits);
+
+	return new Point2d(Math.round(this.x * roundDigits) / roundDigits, Math.round(this.y * roundDigits) / roundDigits);
 };
