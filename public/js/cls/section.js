@@ -78,18 +78,17 @@ Section.prototype.isLeftSibling = function(section)
 Section.prototype.draw = function(ctx)
 {
 	if(this.newRightLaneStart || this.newRightLaneEnd)
-		ctx.drawImage(this.img, laneSize, laneSize*this.markingCorner.imgLeft.type, this.size, this.size, this.markingCorner.imgLeft.pos.x*zoom + leftTop.x, this.markingCorner.imgLeft.pos.y*zoom + leftTop.y, this.size*zoom, this.size*zoom);
+		this.drawImg(ctx, laneSize, laneSize * this.markingCorner.imgLeft.type, this.markingCorner.imgLeft.pos.x, this.markingCorner.imgLeft.pos.y);
 	else if(!this.markingCorner || !this.markingCorner.imgLeft)
 	{
 		if(!this.crossInSection || this.prev)
 		{
-			let start = this.center.plus(new Point2d(-this.size/2, -this.size/2));
-			//ctx.drawImage(this.img, start.x, start.y);
-			ctx.drawImage(this.img, 0, 0, this.size, this.size, start.x*zoom + leftTop.x, start.y*zoom + leftTop.y, this.size*zoom, this.size*zoom);
+			let start = this.center.plus(new Point2d(-this.size / 2, -this.size / 2));
+			this.drawImg(ctx, 0, 0, start.x, start.y);
 		}
 	}
 	else if(this.markingCorner.imgLeft)
-		ctx.drawImage(this.img, laneSize, laneSize*this.markingCorner.imgLeft.type, this.size, this.size, this.markingCorner.imgLeft.pos.x*zoom + leftTop.x, this.markingCorner.imgLeft.pos.y*zoom + leftTop.y, this.size*zoom, this.size*zoom);
+		this.drawImg(ctx, laneSize, laneSize * this.markingCorner.imgLeft.type, this.markingCorner.imgLeft.pos.x, this.markingCorner.imgLeft.pos.y);
 };
 //****************************************
 Section.prototype.drawMarkings = function(ctx)
@@ -114,25 +113,50 @@ Section.prototype.drawMarkingLine = function(line, ctx)
 	ctx.setLineDash(line.lineDash);
 
 	ctx.beginPath();
-	ctx.moveTo(line.from.x*zoom + leftTop.x, line.from.y*zoom + leftTop.y);
-	ctx.lineTo(line.to.x*zoom + leftTop.x, line.to.y*zoom + leftTop.y);
+	this.drawMoveTo(ctx, line.from);
+	this.drawLineTo(ctx, line.to);
 	ctx.stroke();
 };
 //****************************************
 Section.prototype.drawCorner = function(turn, ctx)
 {
 	if(turn.imgRight)
-	//ctx.drawImage(laneTurnImg, turn.imgPos.x, turn.imgPos.y);
-		ctx.drawImage(this.img, 0, laneSize*turn.imgRight.type, this.size, this.size, turn.imgRight.pos.x*zoom + leftTop.x, turn.imgRight.pos.y*zoom + leftTop.y, this.size*zoom, this.size*zoom);
+		this.drawImg(ctx, 0, laneSize * turn.imgRight.type, turn.imgRight.pos.x, turn.imgRight.pos.y);
 
 	ctx.strokeStyle = "#ffffff";
 	ctx.lineWidth = 2;
 	ctx.setLineDash( turn.lineDash );
 
 	ctx.beginPath();
-	ctx.moveTo(turn.from.x*zoom + leftTop.x, turn.from.y*zoom + leftTop.y);
-	ctx.arcTo(turn.corner.x*zoom + leftTop.x, turn.corner.y *zoom+ leftTop.y, turn.to.x*zoom + leftTop.x, turn.to.y*zoom + leftTop.y, turn.rad*zoom);
+	this.drawMoveTo(ctx, turn.from);
+	this.drawArcTo(ctx, turn.corner, turn.to, turn.rad);
 	ctx.stroke();
+};
+//****************************************
+Section.prototype.drawImg = function(ctx, sourceX, sourceY, outX, outY)
+{
+	ctx.drawImage(this.img,
+	              sourceX, sourceY, this.size, this.size,
+	              outX.toScreenX(), outY.toScreenY(), this.size * zoom, this.size * zoom);
+};
+//****************************************
+Section.prototype.drawMoveTo = function(ctx, point)
+{
+	point = point.toDraw();
+	ctx.moveTo(point.x, point.y);
+};
+//****************************************
+Section.prototype.drawLineTo = function(ctx, point)
+{
+	point = point.toDraw();
+	ctx.lineTo(point.x, point.y);
+};
+//****************************************
+Section.prototype.drawArcTo = function(ctx, pointFrom, pointTo, radius)
+{
+	pointFrom = pointFrom.toDraw();
+	pointTo = pointTo.toDraw();
+	ctx.arcTo(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y, radius * zoom);
 };
 //****************************************
 Section.prototype.calcLanesMarkings = function()
@@ -150,7 +174,7 @@ Section.prototype.calcNewRightLane = function(ctx, start)
 	this.newRightLaneStart = start;
 	this.newRightLaneEnd = !start;
 
-	let from = null, corner = null, to = null, imgLeft = {};
+	let from = null, corner = null, to = null, rad = null, imgLeft = {};
 
 	imgLeft['pos'] = this.center.minus(new Point2d(this.size/2, this.size/2));
 

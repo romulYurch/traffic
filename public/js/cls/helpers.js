@@ -3,8 +3,8 @@
 //****************************************
 class Helpers
 {
-	static Random = function(min, max)
+	static Rand(min, max)
 	{
 		return Math.random() * (max - min) + min;
-	};
+	}
 }

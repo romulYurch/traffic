@@ -1,6 +1,16 @@
 //****************************************
 //********POINT2D CLS*********************
 //****************************************
+Number.prototype.toScreenX = function()
+{
+	return this * zoom + leftTop.x;
+};
+//****************************************
+Number.prototype.toScreenY = function()
+{
+	return this * zoom + leftTop.y;
+};
+//****************************************
 function Point2d(x, y)
 {
 	this.x = x;
@@ -57,4 +67,9 @@ Point2d.prototype.round = function(digits)
 	let roundDigits = Math.pow(10, digits);
 
 	return new Point2d(Math.round(this.x * roundDigits) / roundDigits, Math.round(this.y * roundDigits) / roundDigits);
+};
+//****************************************
+Point2d.prototype.toDraw = function()
+{
+	return new Point2d(this.x, this.y).mult(zoom).plus(leftTop);
 };

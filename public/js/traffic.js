@@ -131,7 +131,7 @@ $(function()
 			roadDir.push( { dir : 1, lanes : lanes } );
 			roads.push( new Road(roadDir) );
 			/**********V***********/
-			roadDir = lanes = [];
+			roadDir = []; lanes = [];
 			lanes.push( { start : new Point2d(laneSize/2, laneSize/2), end : new Point2d(laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
 			lanes.push( { start : new Point2d(laneSize + laneSize/2, /*laneSize +*/ laneSize/2), end : new Point2d(laneSize + laneSize/2, height /*- laneSize*/ - laneSize/2), size : laneSize, img : laneImg } );
 			roadDir.push( { dir : 1, lanes : lanes } );
@@ -141,7 +141,7 @@ $(function()
 			roadDir.push( { dir : -1, lanes : lanes } );
 			roads.push( new Road(roadDir) );
 			/**********>***********/
-			roadDir = lanes = [];
+			roadDir = []; lanes = [];
 			lanes.push( { start : new Point2d(laneSize/2, height - laneSize/2), end : new Point2d(width - laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
 			lanes.push( { start : new Point2d(/*laneSize +*/ laneSize/2, height - laneSize - laneSize/2), end : new Point2d(width /*- laneSize*/ - laneSize/2, height - laneSize - laneSize/2), size : laneSize, img : laneImg } );
 			roadDir.push( { dir : 1, lanes : lanes } );
@@ -151,7 +151,7 @@ $(function()
 			roadDir.push( { dir : -1, lanes : lanes } );
 			roads.push( new Road(roadDir) );
 			/**********^***********/
-			roadDir = lanes = [];
+			roadDir = []; lanes = [];
 			lanes.push( { start : new Point2d(width + laneSize/2, 2*laneSize + laneSize/2), end : new Point2d(width + laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
 			lanes.push( { start : new Point2d(width - laneSize/2, laneSize/2), end : new Point2d(width - laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
 			lanes.push( { start : new Point2d(width - laneSize - laneSize/2, /*laneSize +*/ laneSize/2), end : new Point2d(width - laneSize - laneSize/2, height /*- laneSize*/ - laneSize/2), size : laneSize, img : laneImg } );
@@ -163,7 +163,7 @@ $(function()
 			roads.push( new Road(roadDir) );
 			/**********^***********/
 			/**********^***********/
-			roadDir = lanes = [];
+			roadDir = []; lanes = [];
 			lanes.push( { start : new Point2d(width/2 + laneSize/2, laneSize/2), end : new Point2d(width/2 + laneSize/2, 2*height + laneSize/2), size : laneSize, img : laneImg } );
 			roadDir.push( { dir : -1, lanes : lanes } );
 			lanes = [];
@@ -171,7 +171,7 @@ $(function()
 			roadDir.push( { dir : 1, lanes : lanes } );
 			roads.push( new Road(roadDir) );
 			/**********^***********/
-			roadDir = lanes = [];
+			roadDir = []; lanes = [];
 			lanes.push( { start : new Point2d(laneSize/2, height/2 + laneSize/2), end : new Point2d(3*width + laneSize + laneSize/2, height/2 + laneSize/2), size : laneSize, img : laneImg } );
 			roadDir.push( { dir : 1, lanes : lanes } );
 			lanes = [];
@@ -179,7 +179,7 @@ $(function()
 			roadDir.push( { dir : -1, lanes : lanes } );
 			roads.push( new Road(roadDir) );
 			/**********^***********/
-			roadDir = lanes = [];
+			roadDir = []; lanes = [];
 			lanes.push( { 	start : new Point2d(3*width + 2*laneSize + laneSize/2, height/2 - laneSize/2),
 				            end : 	new Point2d(3*width + 2*laneSize + laneSize/2, 2*height + laneSize + laneSize/2),
 				            size : laneSize, img : laneImg } );
@@ -191,7 +191,7 @@ $(function()
 			roadDir.push( { dir : 1, lanes : lanes } );
 			roads.push( new Road(roadDir) );
 			/**********^***********/
-			roadDir = lanes = [];
+			roadDir = []; lanes = [];
 			lanes.push( { 	start : new Point2d(width/2 + laneSize/2, 2*height + laneSize/2),
 				            end : 	new Point2d(3*width + laneSize + laneSize/2, 2*height + laneSize/2),
 				            size : laneSize, img : laneImg } );
