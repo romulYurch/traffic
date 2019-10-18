@@ -1,32 +1,56 @@
+'use strict';
+
+import Helpers from './cls/helpers';
+import Point2d from './cls/point2d';
+//import Lane from './cls/lane';
+//import Section from './cls/section';
+//import Road from './cls/road';
+import Vehicle from './cls/vehicle';
+import {testRoads} from './maps/test_map';
+
+require("jquery-mousewheel");
+
+
+
+
 let laneTurnImg = null, carImg = [];
-// 20px = 5m => 4px = 1m => 1px = 0.25m
-const pix2m = 0.25;
-const pix2km = pix2m/1000;
-const km_h2px_s = 1/(3600*pix2km);
 let leftTop = new Point2d(0, 0),
 	prevMousePos = new Point2d(0, 0);
 
 let zoom = 1;
-const frequency = 30; // fps = 1000/frequency
 
-const laneSize = 20;
+
+Number.prototype.zoom = function()
+{
+	return this * zoom;
+};
+//****************************************
+Number.prototype.toScreenX = function()
+{
+	return this.zoom() + leftTop.x;
+};
+//****************************************
+Number.prototype.toScreenY = function()
+{
+	return this.zoom() + leftTop.y;
+};
 
 $(function()
 {
-	const width = 320;
-	const height = 320;
 	const mapWidth = 1040;//360;
 	const mapHeight = 700;//340;
 
+	const width = 320;
+	const height = 320;
+
 	let maxMouseMoveOffset = 10;
 
-	let laneImg = document.getElementById("roads");
+	let laneImg = document.getElementById("roads_lane");
 	laneTurnImg = document.getElementById("roads_turn");
 	carImg.push(document.getElementById("car_01x20"));
 	
 	let init = function()
 	{
-		
 		let canvas = document.getElementById("trafficCanvas");
 		let offset = $(canvas).offset();
 		
@@ -55,8 +79,8 @@ $(function()
 			{
 				if(!mouseMoveStart)	
 					mouseMoveStart = new Point2d(leftTop.x, leftTop.y);
-				leftTop.x = setMouseMoveX(leftTop.x + e.pageX - prevMousePos.x, maxMouseMoveOffset, canvas.width - mapWidth*zoom - maxMouseMoveOffset);
-				leftTop.y = setMouseMoveY(leftTop.y + e.pageY - prevMousePos.y, maxMouseMoveOffset, canvas.height - mapHeight*zoom - maxMouseMoveOffset);
+				leftTop.x = setMouseMoveX(leftTop.x + e.pageX - prevMousePos.x, maxMouseMoveOffset, canvas.width - mapWidth.zoom() - maxMouseMoveOffset);
+				leftTop.y = setMouseMoveY(leftTop.y + e.pageY - prevMousePos.y, maxMouseMoveOffset, canvas.height - mapHeight.zoom() - maxMouseMoveOffset);
 				//debug.innerHTML = (leftTop.x) + ', ' + (leftTop.y);
 			}
 			prevMousePos.x = e.pageX;
@@ -69,17 +93,17 @@ $(function()
 			/*****************/	
 			if( (leftTop.x <= maxMouseMoveOffset) && (leftTop.x > 0) )
 				smoothMoveTo.x = 0;
-			else if( (leftTop.x >= canvas.width - mapWidth*zoom - maxMouseMoveOffset) && (leftTop.x < canvas.width - mapWidth*zoom) )
-				smoothMoveTo.x = canvas.width - mapWidth*zoom;
+			else if( (leftTop.x >= canvas.width - mapWidth.zoom() - maxMouseMoveOffset) && (leftTop.x < canvas.width - mapWidth.zoom()) )
+				smoothMoveTo.x = canvas.width - mapWidth.zoom();
 			else
-				smoothMoveTo.x = setMouseMoveX(leftTop.x + (leftTop.x - mouseMoveStart.x)/2, 0, canvas.width - mapWidth*zoom);
+				smoothMoveTo.x = setMouseMoveX(leftTop.x + (leftTop.x - mouseMoveStart.x)/2, 0, canvas.width - mapWidth.zoom());
 			/*****************/	
 			if( (leftTop.y <= maxMouseMoveOffset) && (leftTop.y > 0) )
 				smoothMoveTo.y = 0;
-			else if( (leftTop.y >= canvas.height - mapHeight*zoom - maxMouseMoveOffset) && (leftTop.y < canvas.height - mapHeight*zoom) )
-				smoothMoveTo.y = canvas.height - mapHeight*zoom;
+			else if( (leftTop.y >= canvas.height - mapHeight.zoom() - maxMouseMoveOffset) && (leftTop.y < canvas.height - mapHeight.zoom()) )
+				smoothMoveTo.y = canvas.height - mapHeight.zoom();
 			else
-				smoothMoveTo.y = setMouseMoveY(leftTop.y + (leftTop.y - mouseMoveStart.y)/2, 0, canvas.height - mapHeight*zoom);
+				smoothMoveTo.y = setMouseMoveY(leftTop.y + (leftTop.y - mouseMoveStart.y)/2, 0, canvas.height - mapHeight.zoom());
 			
 			smoothMoveDir = smoothMoveTo.minus(leftTop).mult(1/5).round();
 			smoothMoveTo = smoothMoveDir.mult(5).round().plus(leftTop);
@@ -93,14 +117,14 @@ $(function()
 		{
 			let oldZoom = zoom;
 			const zoomChange = (delta > 0) ? 3/2 : 3/4;
-			zoom = Math.max(Math.min(zoom*zoomChange, 3.375), 1);
+			zoom = Math.max(Math.min(zoom * zoomChange, 3.375), 1);
 			e.stopPropagation();
 			e.preventDefault();
 
 			if(oldZoom != zoom)
 			{
-				leftTop.x = setMouseMoveX(leftTop.x - (e.pageX - offset.left - leftTop.x)*(zoomChange - 1), 0, canvas.width - mapWidth*zoom);// - prevMousePos.x;
-				leftTop.y = setMouseMoveY(leftTop.y - (e.pageY - offset.top - leftTop.y)*(zoomChange - 1), 0, canvas.height - mapHeight*zoom);// - prevMousePos.y;
+				leftTop.x = setMouseMoveX(leftTop.x - (e.pageX - offset.left - leftTop.x) * (zoomChange - 1), 0, canvas.width - mapWidth.zoom());// - prevMousePos.x;
+				leftTop.y = setMouseMoveY(leftTop.y - (e.pageY - offset.top - leftTop.y) * (zoomChange - 1), 0, canvas.height - mapHeight.zoom());// - prevMousePos.y;
 				debug.innerHTML = leftTop.x + ', ' + leftTop.y;
 			}
 		});
@@ -117,92 +141,10 @@ $(function()
 		
 		/*********************/
 		/*********************/
-		let roads = [], lanes = [], roadDir = [];
 
 		let initRoads = function()
 		{
-			/***********<**********/
-			lanes.push( { start : new Point2d(laneSize/2, laneSize/2), end : new Point2d(width - laneSize/2, laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(/*laneSize +*/ laneSize/2, laneSize + laneSize/2), end : new Point2d(width /*- laneSize*/ - laneSize/2, laneSize + laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes } );
-			lanes = [];
-			lanes.push( { start : new Point2d(2*laneSize + laneSize/2, 3*laneSize + laneSize/2), end : new Point2d(width - 2*laneSize - laneSize/2, 3*laneSize + laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(2*laneSize + laneSize/2, 2*laneSize + laneSize/2), end : new Point2d(width - 2*laneSize - laneSize/2, 2*laneSize + laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/**********V***********/
-			roadDir = []; lanes = [];
-			lanes.push( { start : new Point2d(laneSize/2, laneSize/2), end : new Point2d(laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(laneSize + laneSize/2, /*laneSize +*/ laneSize/2), end : new Point2d(laneSize + laneSize/2, height /*- laneSize*/ - laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			lanes = [];
-			lanes.push( { start : new Point2d(3*laneSize + laneSize/2, 2*laneSize + laneSize/2), end : new Point2d(3*laneSize + laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(2*laneSize + laneSize/2, 2*laneSize + laneSize/2), end : new Point2d(2*laneSize + laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/**********>***********/
-			roadDir = []; lanes = [];
-			lanes.push( { start : new Point2d(laneSize/2, height - laneSize/2), end : new Point2d(width - laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(/*laneSize +*/ laneSize/2, height - laneSize - laneSize/2), end : new Point2d(width /*- laneSize*/ - laneSize/2, height - laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			lanes = [];
-			lanes.push( { start : new Point2d(2*laneSize + laneSize/2, height - 3*laneSize - laneSize/2), end : new Point2d(width - 2*laneSize - laneSize/2, height - 3*laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(2*laneSize + laneSize/2, height - 2*laneSize - laneSize/2), end : new Point2d(width - 2*laneSize - laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/**********^***********/
-			roadDir = []; lanes = [];
-			lanes.push( { start : new Point2d(width + laneSize/2, 2*laneSize + laneSize/2), end : new Point2d(width + laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(width - laneSize/2, laneSize/2), end : new Point2d(width - laneSize/2, height - laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(width - laneSize - laneSize/2, /*laneSize +*/ laneSize/2), end : new Point2d(width - laneSize - laneSize/2, height /*- laneSize*/ - laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes } );
-			lanes = [];
-			lanes.push( { start : new Point2d(width - 3*laneSize - laneSize/2,   2*laneSize + laneSize/2), end : new Point2d(width - 3*laneSize - laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			lanes.push( { start : new Point2d(width - 2*laneSize - laneSize/2,   2*laneSize + laneSize/2), end : new Point2d(width - 2*laneSize - laneSize/2, height - 2*laneSize - laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/**********^***********/
-			/**********^***********/
-			roadDir = []; lanes = [];
-			lanes.push( { start : new Point2d(width/2 + laneSize/2, laneSize/2), end : new Point2d(width/2 + laneSize/2, 2*height + laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes } );
-			lanes = [];
-			lanes.push( { start : new Point2d(width/2 - laneSize/2, laneSize/2), end : new Point2d(width/2 - laneSize/2, 2*height + laneSize + laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/**********^***********/
-			roadDir = []; lanes = [];
-			lanes.push( { start : new Point2d(laneSize/2, height/2 + laneSize/2), end : new Point2d(3*width + laneSize + laneSize/2, height/2 + laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			lanes = [];
-			lanes.push( { start : new Point2d(laneSize/2,  height/2 - laneSize/2), end : new Point2d(3*width + 2*laneSize + laneSize/2, height/2 - laneSize/2), size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/**********^***********/
-			roadDir = []; lanes = [];
-			lanes.push( { 	start : new Point2d(3*width + 2*laneSize + laneSize/2, height/2 - laneSize/2),
-				            end : 	new Point2d(3*width + 2*laneSize + laneSize/2, 2*height + laneSize + laneSize/2),
-				            size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes	} );
-			lanes = [];
-			lanes.push( { 	start : new Point2d(3*width + laneSize + laneSize/2, height/2 + laneSize/2),
-				            end : 	new Point2d(3*width + laneSize + laneSize/2, 2*height + laneSize/2),
-				            size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/**********^***********/
-			roadDir = []; lanes = [];
-			lanes.push( { 	start : new Point2d(width/2 + laneSize/2, 2*height + laneSize/2),
-				            end : 	new Point2d(3*width + laneSize + laneSize/2, 2*height + laneSize/2),
-				            size : laneSize, img : laneImg } );
-			roadDir.push( { dir : -1, lanes : lanes	} );
-			lanes = [];
-			lanes.push( { 	start : new Point2d(width/2 - laneSize/2, 2*height + laneSize + laneSize/2),
-				            end : 	new Point2d(3*width + 2*laneSize + laneSize/2, 2*height + laneSize + laneSize/2),
-				            size : laneSize, img : laneImg } );
-			roadDir.push( { dir : 1, lanes : lanes } );
-			roads.push( new Road(roadDir) );
-			/*********************/
+			let roads = testRoads(width, height, Helpers.laneSize, laneImg);
 
 			/*******************************/
 			/********crossroads*************/
@@ -372,6 +314,7 @@ $(function()
 				}
 			}
 
+			return roads;
 		};
 		
 		/********************************************/		
@@ -386,7 +329,7 @@ $(function()
 						for (let k = 0; k < roads[i].lanes[j].sections.length; k++)
 							if(point.eq(roads[i].lanes[j].sections[k].center))
 							{
-								vehicles.push(new Vehicle( { img : carImg[0], section : roads[i].lanes[j].sections[k], size : new Point2d(laneSize, laneSize) } ));
+								vehicles.push(new Vehicle( { img : carImg[0], section : roads[i].lanes[j].sections[k], size : new Point2d(Helpers.laneSize, Helpers.laneSize) } ));
 								vehCnt++;
 								if( vehicleInterval && (vehCnt > 5) )
 									clearInterval(vehicleInterval);
@@ -411,7 +354,7 @@ $(function()
 			for (let i = 0; i < badVeh.length; i++)
 			{
 				vehicles.splice(badVeh[i] - i, 1);
-				add_vehicle(new Point2d(laneSize/2, laneSize/2));
+				add_vehicle(new Point2d(Helpers.laneSize / 2, Helpers.laneSize / 2));
 			}
 			/*************************/
 			/*************************/
@@ -452,33 +395,10 @@ $(function()
 		/********************************************/
 		let vehicleInterval = setInterval(add_vehicle, 2000);
 
-		initRoads();
+		let roads = initRoads();
 		
-		setInterval(updateContent, frequency);
+		setInterval(updateContent, Helpers.frequency);
 	};
 
 	init();
 });
-
-//****************************************
-//****************************************
-//****************************************
-function getRandomArbitary(min, max)
-{
-	return Math.random() * (max - min) + min;
-}
-/********************/
-/*Object.prototype.clone = function() 
-{
-    let newObj = (this instanceof Array) ? [] : {};
-    for (i in this) 
-	{
-        if (i == 'clone') 
-			continue;
-        if ( this[i] && (typeof this[i] == "object") )
-			newObj[i] = this[i].clone();
-        else 
-			newObj[i] = this[i]
-    } 
-	return newObj;
-};*/
