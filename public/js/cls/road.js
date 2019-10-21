@@ -99,22 +99,22 @@ export default class Road
 			}
 	}
 	//****************************************
-	calcMarkings(ctx)
+	calcMarkings()
 	{
 		//Markings
 		for (let i in this.dirs)
 			for (let j = 0; j < this.dirs[i].lanes.length; j++)
 			{
-				this.dirs[i].lanes[j].calcSectionsMarkings(ctx);
+				this.dirs[i].lanes[j].calcSectionsMarkings();
 			}
 	}
 	//****************************************
-	drawMarkings(ctx)
+	drawMarkings(viewport)
 	{
 		for (let i in this.dirs)
 			for (let j = 0; j < this.dirs[i].lanes.length; j++)
 			{
-				this.dirs[i].lanes[j].drawSectionsMarkings(ctx);
+				this.dirs[i].lanes[j].drawSectionsMarkings(viewport);
 			}
 	}
 	//****************************************
@@ -128,12 +128,12 @@ export default class Road
 			}
 	}
 	//****************************************
-	drawSections(ctx)
+	drawSections(viewport)
 	{
 		for (let i in this.dirs)
 			for (let j = 0; j < this.dirs[i].lanes.length; j++)
 			{
-				this.dirs[i].lanes[j].drawSections(ctx);
+				this.dirs[i].lanes[j].drawSections(viewport);
 			}
 	}
 	//****************************************

@@ -2,48 +2,39 @@
 
 import Helpers from './cls/helpers';
 import Point2d from './cls/point2d';
-//import Lane from './cls/lane';
-//import Section from './cls/section';
-//import Road from './cls/road';
 import Vehicle from './cls/vehicle';
 import {testRoads} from './maps/test_map';
+import ViewPort from "./cls/veiwport";
+import MouseSmoothMove from "./cls/mouseSmothMove";
 
 require("jquery-mousewheel");
 
 
-
-
 let laneTurnImg = null, carImg = [];
-let leftTop = new Point2d(0, 0),
-	prevMousePos = new Point2d(0, 0);
-
-let zoom = 1;
 
 
-Number.prototype.zoom = function()
+Number.prototype.zoom = function(viewport)
 {
-	return this * zoom;
+	return this * viewport.zoom;
 };
 //****************************************
-Number.prototype.toScreenX = function()
+Number.prototype.toScreenX = function(viewport)
 {
-	return this.zoom() + leftTop.x;
+	return this.zoom(viewport) + viewport.LeftTop.x;
 };
 //****************************************
-Number.prototype.toScreenY = function()
+Number.prototype.toScreenY = function(viewport)
 {
-	return this.zoom() + leftTop.y;
+	return this.zoom(viewport) + viewport.LeftTop.y;
 };
 
 $(function()
 {
-	const mapWidth = 1040;//360;
-	const mapHeight = 700;//340;
+	const screenWidth = 900;//360;
+	const screenHeight = 500;//340;
 
 	const width = 320;
 	const height = 320;
-
-	let maxMouseMoveOffset = 10;
 
 	let laneImg = document.getElementById("roads_lane");
 	laneTurnImg = document.getElementById("roads_turn");
@@ -51,100 +42,19 @@ $(function()
 	
 	let init = function()
 	{
-		let canvas = document.getElementById("trafficCanvas");
-		let offset = $(canvas).offset();
-		
-		let ctx = canvas.getContext("2d");
-		let debug = document.getElementById("debug");	
+		let viewPort = new ViewPort("trafficCanvas", screenWidth, screenHeight);
 
-		let smoothMoveInterval = null;
-		let smoothMoveTo = new Point2d(0, 0);
-		let smoothMoveDir = null;
-		
-		let mouseMoveStart = null;
-		
-		let smoothMove  = function()
-		{
-			if(smoothMoveInterval && smoothMoveDir)
-			{
-				leftTop = leftTop.plus(smoothMoveDir);
-				if(leftTop.eq(smoothMoveTo))
-					clearInterval(smoothMoveInterval);
-			}
-		};
-		
-		$(canvas).mousemove(function(e)
-		{
-			if(e.which == 1) //нажата левая кнопка
-			{
-				if(!mouseMoveStart)	
-					mouseMoveStart = new Point2d(leftTop.x, leftTop.y);
-				leftTop.x = setMouseMoveX(leftTop.x + e.pageX - prevMousePos.x, maxMouseMoveOffset, canvas.width - mapWidth.zoom() - maxMouseMoveOffset);
-				leftTop.y = setMouseMoveY(leftTop.y + e.pageY - prevMousePos.y, maxMouseMoveOffset, canvas.height - mapHeight.zoom() - maxMouseMoveOffset);
-				//debug.innerHTML = (leftTop.x) + ', ' + (leftTop.y);
-			}
-			prevMousePos.x = e.pageX;
-			prevMousePos.y = e.pageY;
-		});
-		
-		$(canvas).click(function()
-		{			
-			smoothMoveTo = new Point2d(leftTop.x, leftTop.y);
-			/*****************/	
-			if( (leftTop.x <= maxMouseMoveOffset) && (leftTop.x > 0) )
-				smoothMoveTo.x = 0;
-			else if( (leftTop.x >= canvas.width - mapWidth.zoom() - maxMouseMoveOffset) && (leftTop.x < canvas.width - mapWidth.zoom()) )
-				smoothMoveTo.x = canvas.width - mapWidth.zoom();
-			else
-				smoothMoveTo.x = setMouseMoveX(leftTop.x + (leftTop.x - mouseMoveStart.x)/2, 0, canvas.width - mapWidth.zoom());
-			/*****************/	
-			if( (leftTop.y <= maxMouseMoveOffset) && (leftTop.y > 0) )
-				smoothMoveTo.y = 0;
-			else if( (leftTop.y >= canvas.height - mapHeight.zoom() - maxMouseMoveOffset) && (leftTop.y < canvas.height - mapHeight.zoom()) )
-				smoothMoveTo.y = canvas.height - mapHeight.zoom();
-			else
-				smoothMoveTo.y = setMouseMoveY(leftTop.y + (leftTop.y - mouseMoveStart.y)/2, 0, canvas.height - mapHeight.zoom());
-			
-			smoothMoveDir = smoothMoveTo.minus(leftTop).mult(1/5).round();
-			smoothMoveTo = smoothMoveDir.mult(5).round().plus(leftTop);
+		let debug = document.getElementById("debug");
 
-			mouseMoveStart = null;
-			
-			smoothMoveInterval = setInterval(smoothMove, 30);
-		});
-		
-		$(canvas).mousewheel(function(e, delta)
-		{
-			let oldZoom = zoom;
-			const zoomChange = (delta > 0) ? 3/2 : 3/4;
-			zoom = Math.max(Math.min(zoom * zoomChange, 3.375), 1);
-			e.stopPropagation();
-			e.preventDefault();
+		new MouseSmoothMove(viewPort);
 
-			if(oldZoom != zoom)
-			{
-				leftTop.x = setMouseMoveX(leftTop.x - (e.pageX - offset.left - leftTop.x) * (zoomChange - 1), 0, canvas.width - mapWidth.zoom());// - prevMousePos.x;
-				leftTop.y = setMouseMoveY(leftTop.y - (e.pageY - offset.top - leftTop.y) * (zoomChange - 1), 0, canvas.height - mapHeight.zoom());// - prevMousePos.y;
-				debug.innerHTML = leftTop.x + ', ' + leftTop.y;
-			}
-		});
-		
-		let setMouseMoveX = function(x, min, max)
-		{
-			return Math.max(Math.min(Math.round(x), min), max);
-		};
-		let setMouseMoveY = function(y, min, max)
-		{
-			return Math.max(Math.min(Math.round(y), min), max);
-		};
-		
-		
 		/*********************/
 		/*********************/
 
 		let initRoads = function()
 		{
 			let roads = testRoads(width, height, Helpers.laneSize, laneImg);
+			let maxX = 0, maxY = 0;
 
 			/*******************************/
 			/********crossroads*************/
@@ -295,7 +205,7 @@ $(function()
 				}
 
 			for (let i = 0; i < roads.length; i++)
-				roads[i].calcMarkings(ctx);
+				roads[i].calcMarkings();
 
 			/*******************************/
 			for (let i = 0; i < roads.length; i++)
@@ -307,12 +217,18 @@ $(function()
 					curDebug.innerHTML += "lane " + l + "<br />";
 					for (let m = 0; m < roads[i].lanes[l].sections.length; m++)
 					{
+						maxX = Math.max(maxX, roads[i].lanes[l].sections[m].center.x);
+						maxY = Math.max(maxY, roads[i].lanes[l].sections[m].center.y);
 						curDebug.innerHTML +=  "section " + m + " (" + roads[i].lanes[l].sections[m].center.x + "," + roads[i].lanes[l].sections[m].center.y + ")<br />";
 						if (roads[i].lanes[l].sections[m].crossDir)
 							curDebug.innerHTML +=  "-> " + roads[i].lanes[l].sections[m].crossSectionNum + " (" + roads[i].lanes[l].sections[m].crossDir.x + "," + roads[i].lanes[l].sections[m].crossDir.y + " | right: " + roads[i].lanes[l].sections[m].rightDir.x + "," + roads[i].lanes[l].sections[m].rightDir.y + " | left: " + roads[i].lanes[l].sections[m].leftDir.x + "," + roads[i].lanes[l].sections[m].leftDir.y + ")<br />";
 					}
 				}
 			}
+
+			// ширина карты расчитывается по максимальным координатам ее дорог
+			viewPort.mapWidth = maxX + Helpers.laneSize / 2;
+			viewPort.mapHeight = maxY + Helpers.laneSize / 2;
 
 			return roads;
 		};
@@ -370,24 +286,24 @@ $(function()
 			/*for (let i = 0; i < roads.length; i++)
 				roads[i].drawCorners(ctx);*/
 			for (let i = 0; i < roads.length; i++)
-				roads[i].drawSections(ctx);
+				roads[i].drawSections(viewPort);
 			for (let i = 0; i < roads.length; i++)
-				roads[i].drawCrosses(ctx);
+				roads[i].drawCrosses(viewPort.ctx);
 			for (let i = 0; i < roads.length; i++)
-				roads[i].drawMarkings(ctx);
+				roads[i].drawMarkings(viewPort);
 			/**********************************/
 			/**********************************/
 			for (let i = 0; i < vehicles.length; i++)
 				if(vehicles[i])
-					vehicles[i].draw(ctx);
+					vehicles[i].draw(viewPort);
 		};
 		/********************************************/
 
 		let clear = function()
 		{
-			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-			ctx.fillStyle = "#000000";
-			ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+			viewPort.ctx.clearRect(0, 0, viewPort.ctx.canvas.width, viewPort.ctx.canvas.height);
+			viewPort.ctx.fillStyle = "#000000";
+			viewPort.ctx.fillRect(0, 0, viewPort.ctx.canvas.width, viewPort.ctx.canvas.height);
 		};
 		/********************************************/
 		let vehicles = [];

@@ -77,88 +77,88 @@ export default class Section
 		return this.center.plus(this.leftDir.mult(this.size)).eq(section.center);
 	}
 	//****************************************
-	draw(ctx)
+	draw(viewport)
 	{
 		if(this.newRightLaneStart || this.newRightLaneEnd)
-			this.drawImg(ctx, this.size, this.size * this.markingCorner.imgLeft.type, this.markingCorner.imgLeft.pos.x, this.markingCorner.imgLeft.pos.y);
+			this.drawImg(viewport, this.size, this.size * this.markingCorner.imgLeft.type, this.markingCorner.imgLeft.pos.x, this.markingCorner.imgLeft.pos.y);
 		else if(!this.markingCorner || !this.markingCorner.imgLeft)
 		{
 			if(!this.crossInSection || this.prev)
 			{
 				let start = this.center.plus(new Point2d(-this.size / 2, -this.size / 2));
-				this.drawImg(ctx, 0, 0, start.x, start.y);
+				this.drawImg(viewport, 0, 0, start.x, start.y);
 			}
 		}
 		else if(this.markingCorner.imgLeft)
-			this.drawImg(ctx, this.size, this.size * this.markingCorner.imgLeft.type, this.markingCorner.imgLeft.pos.x, this.markingCorner.imgLeft.pos.y);
+			this.drawImg(viewport, this.size, this.size * this.markingCorner.imgLeft.type, this.markingCorner.imgLeft.pos.x, this.markingCorner.imgLeft.pos.y);
 	}
 	//****************************************
-	drawMarkings(ctx)
+	drawMarkings(viewport)
 	{
 		if(this.markingRight)
-			this.drawMarkingLine(this.markingRight, ctx);
+			this.drawMarkingLine(this.markingRight, viewport);
 
 		if(this.markingLeft)
-			this.drawMarkingLine(this.markingLeft, ctx);
+			this.drawMarkingLine(this.markingLeft, viewport);
 
 		if(this.markingSepCorner)
-			this.drawCorner(this.markingSepCorner, ctx);
+			this.drawCorner(this.markingSepCorner, viewport);
 
 		if(this.markingCorner)
-			this.drawCorner(this.markingCorner, ctx);
+			this.drawCorner(this.markingCorner, viewport);
 	}
 	//****************************************
-	drawMarkingLine(line, ctx)
+	drawMarkingLine(line, viewport)
 	{
-		ctx.strokeStyle = "#FFFFFF";
-		ctx.lineWidth = 2;
-		ctx.setLineDash(line.lineDash);
+		viewport.ctx.strokeStyle = "#FFFFFF";
+		viewport.ctx.lineWidth = 2;
+		viewport.ctx.setLineDash(line.lineDash);
 
-		ctx.beginPath();
-		this.drawMoveTo(ctx, line.from);
-		this.drawLineTo(ctx, line.to);
-		ctx.stroke();
+		viewport.ctx.beginPath();
+		this.drawMoveTo(viewport, line.from);
+		this.drawLineTo(viewport, line.to);
+		viewport.ctx.stroke();
 	}
 	//****************************************
-	drawCorner(turn, ctx)
+	drawCorner(turn, viewport)
 	{
 		if(turn.imgRight)
-			this.drawImg(ctx, 0, this.size * turn.imgRight.type, turn.imgRight.pos.x, turn.imgRight.pos.y);
+			this.drawImg(viewport, 0, this.size * turn.imgRight.type, turn.imgRight.pos.x, turn.imgRight.pos.y);
 
-		ctx.strokeStyle = "#ffffff";
-		ctx.lineWidth = 2;
-		ctx.setLineDash( turn.lineDash );
+		viewport.ctx.strokeStyle = "#ffffff";
+		viewport.ctx.lineWidth = 2;
+		viewport.ctx.setLineDash( turn.lineDash );
 
-		ctx.beginPath();
-		this.drawMoveTo(ctx, turn.from);
-		this.drawArcTo(ctx, turn.corner, turn.to, turn.rad);
-		ctx.stroke();
+		viewport.ctx.beginPath();
+		this.drawMoveTo(viewport, turn.from);
+		this.drawArcTo(viewport, turn.corner, turn.to, turn.rad);
+		viewport.ctx.stroke();
 	}
 	//****************************************
-	drawImg (ctx, sourceX, sourceY, outX, outY)
+	drawImg (viewport, sourceX, sourceY, outX, outY)
 	{
-		ctx.drawImage(this.img,
+		viewport.ctx.drawImage(this.img,
 		              sourceX, sourceY, this.size, this.size,
-		              outX.toScreenX(), outY.toScreenY(), this.size.zoom(), this.size.zoom());
+		              outX.toScreenX(viewport), outY.toScreenY(viewport), this.size.zoom(viewport), this.size.zoom(viewport));
 	}
 	//****************************************
-	drawMoveTo(ctx, point)
+	drawMoveTo(viewport, point)
 	{
-		point = point.toDraw();
-		ctx.moveTo(point.x, point.y);
+		point = point.toDraw(viewport);
+		viewport.ctx.moveTo(point.x, point.y);
 	}
 	//****************************************
-	drawLineTo(ctx, point)
+	drawLineTo(viewport, point)
 	{
-		point = point.toDraw();
-		ctx.lineTo(point.x, point.y);
+		point = point.toDraw(viewport);
+		viewport.ctx.lineTo(point.x, point.y);
 	}
 	//****************************************
-	drawArcTo(ctx, pointFrom, pointTo, radius)
+	drawArcTo(viewport, pointFrom, pointTo, radius)
 	{
-		pointFrom = pointFrom.toDraw();
-		pointTo = pointTo.toDraw();
-		ctx.arcTo(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y, radius.zoom());
+		pointFrom = pointFrom.toDraw(viewport);
+		pointTo = pointTo.toDraw(viewport);
+		viewport.ctx.arcTo(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y, radius.zoom(viewport));
 	}
 	//****************************************
 	calcLanesMarkings()
@@ -171,7 +171,7 @@ export default class Section
 		this.markingLeft = { from : this.markingLeftStart, to : this.markingLeftEnd, lineDash : [] };
 	}
 	//****************************************
-	calcNewRightLane(ctx, start)
+	calcNewRightLane(start)
 	{
 		this.newRightLaneStart = start;
 		this.newRightLaneEnd = !start;

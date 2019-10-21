@@ -29,7 +29,7 @@ export default class Lane
 		this.width = Math.abs(this.end.x - this.start.x) + this.size;
 		this.height = Math.abs(this.end.y - this.start.y) + this.size;
 
-		this.startOffset = new Point2d(-this.size/2, -this.size/2);
+		this.startOffset = new Point2d(-this.size / 2, -this.size / 2);
 
 		//this.laneStartOffset = new Point2d(-this.size/2, -this.size/2);
 		//this.laneEndOffset = new Point2d( ( (this.type == "v") ? -1 : 1 )*this.size/2, ( (this.type == "v") ? 1 : -1 )*this.size/2);
@@ -47,7 +47,7 @@ export default class Lane
 	initSections(img)
 	{
 		let point = this.start;
-		let plusdDir = new Point2d(this.dir.x*this.size, this.dir.y*this.size);
+		let plusdDir = new Point2d(this.dir.x * this.size, this.dir.y * this.size);
 		let num = 0;
 
 		while (!point.eq(this.end))
@@ -55,7 +55,7 @@ export default class Lane
 			this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, num: num++, lane :  this  } ) );
 			point = point.plus(plusdDir);
 		}
-		this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, num: num++, lane :  this  } ) );
+		this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, num: num, lane :  this  } ) );
 
 		/****************************/
 		for (let i = 0; i < this.sections.length; i++)
@@ -93,10 +93,10 @@ export default class Lane
 
 	}
 	//****************************************
-	drawSections(ctx)
+	drawSections(viewport)
 	{
 		for (let i = 0; i < this.sections.length; i++)
-			this.sections[i].draw(ctx);
+			this.sections[i].draw(viewport);
 	}
 	//****************************************
 	drawCrosses(ctx)
@@ -109,13 +109,13 @@ export default class Lane
 
 	}
 	//****************************************
-	drawSectionsMarkings(ctx)
+	drawSectionsMarkings(viewport)
 	{
 		for (let i = 0; i < this.sections.length; i++)
-			this.sections[i].drawMarkings(ctx);
+			this.sections[i].drawMarkings(viewport);
 	}
 	//****************************************
-	calcSectionsMarkings(ctx)
+	calcSectionsMarkings()
 	{
 		for (let i = 1; i < this.sections.length - 1; i++)
 		{
@@ -134,19 +134,19 @@ export default class Lane
 						{
 							if( (this.sections[i].crossInDir == null) || (this.sections[i].crossInDir.eq(this.sections[i].rightDir)) // и на текущий сектор не повернули или повернули, выполняя левый поворот
 								|| ( (this.sections[i].crossInSectionNum == this.sections[i].rightCnt - 1) && (this.sections[i].crossInDir.eq(this.sections[i].leftDir)) ) ) // или же это сектор Т-образный перекрестка
-								this.sections[i].calcLanesMarkings(ctx);
+								this.sections[i].calcLanesMarkings();
 						}
 						else if(this.sections[i].rightCnt > 1)
-							this.sections[i].calcLanesMarkings(ctx);
+							this.sections[i].calcLanesMarkings();
 					}
 					else //поворачиваем направо
 					{
 						if(this.sections[i].rightCnt > 1)
-							this.sections[i].calcLanesMarkings(ctx);
+							this.sections[i].calcLanesMarkings();
 						if(this.sections[i].rightCnt == 1)
-							this.sections[i + this.sections[i].rightCnt].calcCorner(ctx);
+							this.sections[i + this.sections[i].rightCnt].calcCorner();
 						else if( this.sections[i + this.sections[i].rightCnt].crossSection && (this.sections[i].rightCnt == this.sections[i + this.sections[i].rightCnt].crossSection.rightCnt) )
-							this.sections[i + this.sections[i].rightCnt].calcCorner(ctx);
+							this.sections[i + this.sections[i].rightCnt].calcCorner();
 					}
 				}
 			}
@@ -156,7 +156,7 @@ export default class Lane
 				let crossRightCnt = this.sections[i + 1].crossSection.rightCnt;
 				if(crossRightCnt == this.sections[i + 1].rightCnt)
 					if( (i + crossRightCnt == this.sections.length - 1) && (this.sections[i + 1].crossSectionNum == crossRightCnt - 1) )
-						this.sections[i + 1].calcCorner(ctx);
+						this.sections[i + 1].calcCorner();
 			}
 			/**************************************************************************************/
 			/**************************************************************************************/
@@ -167,16 +167,16 @@ export default class Lane
 					if(!this.sections[i - 1].crossInDir || this.sections[i - 1].crossInDir.eq(this.sections[i].leftDir))
 					{
 						if(!this.sections[i + 1].crossDir || this.sections[i + 1].crossDir.eq(this.sections[i].rightDir))
-							this.sections[i].calcSepMarkings(ctx);
+							this.sections[i].calcSepMarkings();
 						else
-							this.sections[i + 1].calcSepCorner(ctx);
+							this.sections[i + 1].calcSepCorner();
 					}
 				}
 				else if(this.sections[i + 1].crossDir && !this.sections[i + 1].crossInDir && (i + 1 == this.sections.length - 1) && this.sections[i + 1].crossDir.eq(this.sections[i].rightDir) )
 				{
-					this.sections[i + 1].calcSepCorner(ctx);
-					this.sections[i].calcSepMarkings(ctx);
-					this.sections[i + 1].crossSection.next.calcSepMarkings(ctx);
+					this.sections[i + 1].calcSepCorner();
+					this.sections[i].calcSepMarkings();
+					this.sections[i + 1].crossSection.next.calcSepMarkings();
 				}
 			}
 		}
@@ -184,13 +184,13 @@ export default class Lane
 		if (!this.sections[0].right && this.sections[0].left && this.sections[0].left.dir.eq(this.sections[0].dir)) //если это потенциальный правый ряд с сужением или расширением
 		{
 			if(!this.sections[0].prev && this.sections[0].left.prev) //расширение
-				this.sections[0].calcNewRightLane(ctx, true);
+				this.sections[0].calcNewRightLane(true);
 		}
 		let last = this.sections.length - 1;
 		if (!this.sections[last].right && this.sections[last].left && this.sections[last].left.dir.eq(this.sections[last].dir)) //если это потенциальный правый ряд с сужением или расширением
 		{
 			if(!this.sections[last].next && this.sections[last].left.next) //сужение
-				this.sections[last].calcNewRightLane(ctx, false);
+				this.sections[last].calcNewRightLane(false);
 		}
 	}
 	//****************************************

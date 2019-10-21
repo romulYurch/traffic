@@ -61,8 +61,8 @@ export default class Point2d
 		return new Point2d(Math.round(this.x * roundDigits) / roundDigits, Math.round(this.y * roundDigits) / roundDigits);
 	}
 	//****************************************
-	toDraw()
+	toDraw(viewport)
 	{
-		return new Point2d(this.x.toScreenX(), this.y.toScreenY());//.mult(zoom).plus(leftTop);
+		return new Point2d(this.x.toScreenX(viewport), this.y.toScreenY(viewport));
 	}
 }

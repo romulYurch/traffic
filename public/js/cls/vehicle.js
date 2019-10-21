@@ -100,59 +100,56 @@ export default class Vehicle
 	}
 
 	/***********************************/
-	draw(ctx)
+	draw(viewport)
 	{
 		if(this.debug)
 		{
 			if(this.sensSection)
 			{
-				ctx.strokeStyle = "#0000ff";
-				//ctx.strokeRect((this.sensSection.center.x - this.sensSection.size/2)*zoom + leftTop.x, (this.sensSection.center.y - this.sensSection.size/2) * zoom + leftTop.y, this.size * zoom, this.size * zoom);
-				this.drawRect(ctx, this.sensSection.center.x - this.sensSection.size / 2, this.sensSection.center.y - this.sensSection.size / 2);
+				viewport.ctx.strokeStyle = "#0000ff";
+				this.drawRect(viewport, this.sensSection.center.x - this.sensSection.size / 2, this.sensSection.center.y - this.sensSection.size / 2);
 			}
 			if(this.section)
 			{
-				ctx.strokeStyle = "#ff0000";
-				//ctx.strokeRect((this.section.center.x - this.section.size/2)*zoom + leftTop.x, (this.section.center.y - this.section.size/2)*zoom + leftTop.y, this.size * zoom, this.size * zoom);
-				this.drawRect(ctx, this.section.center.x - this.section.size / 2, this.section.center.y - this.section.size / 2);
+				viewport.ctx.strokeStyle = "#ff0000";
+				this.drawRect(viewport, this.section.center.x - this.section.size / 2, this.section.center.y - this.section.size / 2);
 			}
 
 			for(let i = 0, len = this.crossSections.length; i < len; i++)
 			{
-				ctx.strokeStyle = "#00ff00";
-				//ctx.strokeRect((this.crossSections[i].section.center.x - this.crossSections[i].section.size/2)*zoom + leftTop.x, (this.crossSections[i].section.center.y - this.crossSections[i].section.size/2) * zoom + leftTop.y, this.size * zoom, this.size * zoom);
-				this.drawRect(ctx, this.crossSections[i].section.center.x - this.crossSections[i].section.size / 2, this.crossSections[i].section.center.y - this.crossSections[i].section.size / 2);
+				viewport.ctx.strokeStyle = "#00ff00";
+				this.drawRect(viewport, this.crossSections[i].section.center.x - this.crossSections[i].section.size / 2, this.crossSections[i].section.center.y - this.crossSections[i].section.size / 2);
 			}
 		}
 		/*******************/
 		//ctx.drawImage(this.img, 0, this.size * this.type, this.size.x, this.size.y, (this.pos.x - this.section.size/2)*zoom + leftTop.x,  (this.pos.y - this.section.size/2) * zoom + leftTop.y, this.size.x * zoom, this.size.y * zoom);
-		this.drawImg(ctx, 0, this.size.y * this.type, this.pos.x - this.section.size / 2,  this.pos.y - this.section.size / 2);
+		this.drawImg(viewport, 0, this.size.y * this.type, this.pos.x - this.section.size / 2,  this.pos.y - this.section.size / 2);
 		/*******************/
 		if(this.debug)
 		{
-			ctx.fillStyle = "#00ff00";
-			ctx.font = "10px Arial";
-			ctx.fillText(Math.round(this.speed / Helpers.km_h2px_s) + ',' + ( (this.crossSections.length) ? Math.round(this.curNeededSpeed / Helpers.km_h2px_s) + ' - ' + Math.round(this.crossSections[0].distance) : '?' ),
-			             (this.pos.x - 7).toScreenX(), (this.pos.y - 8).toScreenY());
+			viewport.ctx.fillStyle = "#00ff00";
+			viewport.ctx.font = "10px Arial";
+			viewport.ctx.fillText(Math.round(this.speed / Helpers.km_h2px_s) + ',' + ( (this.crossSections.length) ? Math.round(this.curNeededSpeed / Helpers.km_h2px_s) + ' - ' + Math.round(this.crossSections[0].distance) : '?' ),
+			             (this.pos.x - 7).toScreenX(viewport), (this.pos.y - 8).toScreenY(viewport));
 		}
 	}
 
 	//****************************************
-	drawRect (ctx, sourceX, sourceY)
+	drawRect (viewport, sourceX, sourceY)
 	{
-		ctx.strokeRect(sourceX.toScreenX(),
-		               sourceY.toScreenY(),
-		               this.size.x.zoom(),
-		               this.size.y.zoom());
+		viewport.ctx.strokeRect(sourceX.toScreenX(viewport),
+		                        sourceY.toScreenY(viewport),
+		                        this.size.x.zoom(viewport),
+		                        this.size.y.zoom(viewport));
 
 	}
 
 	//****************************************
-	drawImg (ctx, sourceX, sourceY, outX, outY)
+	drawImg (viewport, sourceX, sourceY, outX, outY)
 	{
-		ctx.drawImage(this.img,
-		              sourceX, sourceY, this.size.x, this.size.y,
-		              outX.toScreenX(), outY.toScreenY(), this.size.x.zoom(), this.size.y.zoom());
+		viewport.ctx.drawImage(this.img,
+		                        sourceX, sourceY, this.size.x, this.size.y,
+		                        outX.toScreenX(viewport), outY.toScreenY(viewport), this.size.x.zoom(viewport), this.size.y.zoom(viewport));
 	}
 
 	/***********************************/
