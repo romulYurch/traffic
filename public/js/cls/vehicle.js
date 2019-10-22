@@ -122,8 +122,7 @@ export default class Vehicle
 			}
 		}
 		/*******************/
-		//ctx.drawImage(this.img, 0, this.size * this.type, this.size.x, this.size.y, (this.pos.x - this.section.size/2)*zoom + leftTop.x,  (this.pos.y - this.section.size/2) * zoom + leftTop.y, this.size.x * zoom, this.size.y * zoom);
-		this.drawImg(viewport, 0, this.size.y * this.type, this.pos.x - this.section.size / 2,  this.pos.y - this.section.size / 2);
+		this.drawImg(viewport, 0, this.size * this.type, this.pos.x - this.section.size / 2,  this.pos.y - this.section.size / 2);
 		/*******************/
 		if(this.debug)
 		{
@@ -139,8 +138,8 @@ export default class Vehicle
 	{
 		viewport.ctx.strokeRect(sourceX.toScreenX(viewport),
 		                        sourceY.toScreenY(viewport),
-		                        this.size.x.zoom(viewport),
-		                        this.size.y.zoom(viewport));
+		                        this.size.zoom(viewport),
+		                        this.size.zoom(viewport));
 
 	}
 
@@ -148,8 +147,8 @@ export default class Vehicle
 	drawImg (viewport, sourceX, sourceY, outX, outY)
 	{
 		viewport.ctx.drawImage(this.img,
-		                        sourceX, sourceY, this.size.x, this.size.y,
-		                        outX.toScreenX(viewport), outY.toScreenY(viewport), this.size.x.zoom(viewport), this.size.y.zoom(viewport));
+		                        sourceX, sourceY, this.size, this.size,
+		                        outX.toScreenX(viewport), outY.toScreenY(viewport), this.size.zoom(viewport), this.size.zoom(viewport));
 	}
 
 	/***********************************/

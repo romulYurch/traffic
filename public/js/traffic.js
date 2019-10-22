@@ -46,8 +46,6 @@ $(function()
 
 		let debug = document.getElementById("debug");
 
-		new MouseSmoothMove(viewPort);
-
 		/*********************/
 		/*********************/
 
@@ -245,7 +243,7 @@ $(function()
 						for (let k = 0; k < roads[i].lanes[j].sections.length; k++)
 							if(point.eq(roads[i].lanes[j].sections[k].center))
 							{
-								vehicles.push(new Vehicle( { img : carImg[0], section : roads[i].lanes[j].sections[k], size : new Point2d(Helpers.laneSize, Helpers.laneSize) } ));
+								vehicles.push(new Vehicle( { img : carImg[0], section : roads[i].lanes[j].sections[k], size : Helpers.laneSize } ));
 								vehCnt++;
 								if( vehicleInterval && (vehCnt > 5) )
 									clearInterval(vehicleInterval);
@@ -274,37 +272,31 @@ $(function()
 			}
 			/*************************/
 			/*************************/
-			drawContent();
+			drawContent(viewPort);
 		};
 		/********************************************/
 
-		let drawContent = function()
+		let drawContent = function(viewport)
 		{
-			clear();
+			viewport.clear();
 			/*for (let i = 0; i < roads.length; i++)
 				roads[i].draw(ctx);*/
 			/*for (let i = 0; i < roads.length; i++)
 				roads[i].drawCorners(ctx);*/
 			for (let i = 0; i < roads.length; i++)
-				roads[i].drawSections(viewPort);
+				roads[i].drawSections(viewport);
 			for (let i = 0; i < roads.length; i++)
-				roads[i].drawCrosses(viewPort.ctx);
+				roads[i].drawCrosses(viewport.ctx);
 			for (let i = 0; i < roads.length; i++)
-				roads[i].drawMarkings(viewPort);
+				roads[i].drawMarkings(viewport);
 			/**********************************/
 			/**********************************/
 			for (let i = 0; i < vehicles.length; i++)
 				if(vehicles[i])
-					vehicles[i].draw(viewPort);
+					vehicles[i].draw(viewport);
 		};
 		/********************************************/
 
-		let clear = function()
-		{
-			viewPort.ctx.clearRect(0, 0, viewPort.ctx.canvas.width, viewPort.ctx.canvas.height);
-			viewPort.ctx.fillStyle = "#000000";
-			viewPort.ctx.fillRect(0, 0, viewPort.ctx.canvas.width, viewPort.ctx.canvas.height);
-		};
 		/********************************************/
 		let vehicles = [];
 		let vehCnt = 0;

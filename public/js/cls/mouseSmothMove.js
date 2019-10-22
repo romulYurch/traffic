@@ -79,7 +79,6 @@ export default class MouseSmoothMove
 			                     {
 				                     viewport.LeftTop.x = ths.getMouseMove(viewport.LeftTop.x - (e.pageX - viewport.offset.left - viewport.LeftTop.x) * (zoomChange - 1), 0, viewport.canvas.width - viewport.mapWidth.zoom(viewport));
 				                     viewport.LeftTop.y = ths.getMouseMove(viewport.LeftTop.y - (e.pageY - viewport.offset.top - viewport.LeftTop.y) * (zoomChange - 1), 0, viewport.canvas.height - viewport.mapHeight.zoom(viewport));
-				                     //debug.innerHTML = Helpers.LeftTop.x + ', ' + Helpers.LeftTop.y;
 			                     }
 		                     });
 	}

@@ -1,17 +1,8 @@
 import Point2d from "./point2d";
+import MouseSmoothMove from "./mouseSmothMove";
 
 export default class ViewPort
 {
-	/*public canvas;
-	ctx;
-
-	offset;
-	screenWidth;
-	screenHeight;
-	mapWidth;
-	mapHeight;
-	zoom;*/
-
 	constructor(canvasID, screenWidth, screenHeight)
 	{
 		this.canvas = document.getElementById(canvasID); //
@@ -24,5 +15,14 @@ export default class ViewPort
 
 		this.LeftTop = new Point2d(0, 0);
 		this.zoom = 1;
+
+		new MouseSmoothMove(this);
+	}
+
+	clear()
+	{
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.ctx.fillStyle = "#000000";
+		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 }
