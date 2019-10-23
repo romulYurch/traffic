@@ -10,8 +10,10 @@ export default class ViewPort
 		params = params || {};
 
 		this.canvas = document.getElementById(canvasID); //
-		this.canvas.width = params.width || 900;
-		this.canvas.height = params.height || 500;
+		let $canvas = $(this.canvas);
+
+		this.canvas.width = params.width || $(document).width() - parseInt($canvas.css('margin-left')) - parseInt($canvas.css('margin-right'));
+		this.canvas.height = params.height || $(document).height() - parseInt($canvas.css('margin-top')) - parseInt($canvas.css('margin-bottom'));
 
 		this.zoom = params.zoom || 1;
 
@@ -22,13 +24,13 @@ export default class ViewPort
 		this.vehicleMaxCnt = this.vehiclesParams.length || params.vehicleMaxCnt || 5;
 		this.vehicleSpown = params.vehicleSpown || new Point2d(10, 10);
 
-		this.carDefaultImg = params.carDefaultImg || [ document.getElementById("car_01x20") ];
+		this.carDefaultImg = params.carDefaultImg || document.getElementById("car_01x20");
 
 		/*******************************************************/
 
 		this.ctx = this.canvas.getContext("2d");
 
-		this.offset = $(this.canvas).offset();
+		this.offset = $canvas.offset();
 
 		this.vehicles = [];
 		this.roads = [];
