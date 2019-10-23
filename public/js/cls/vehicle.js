@@ -9,37 +9,53 @@ export default class Vehicle
 	constructor(params)
 	{
 		this.img = params.img;
-
-		this.maxSpeed = params.speed ? params.speed : Helpers.Rand(45, 60) * Helpers.km_h2px_s; // 15 - 20 km/h
-		this.speed = this.maxSpeed;
-		//this.freqSpeed = frequency / 30;
-		this.fps = 1000 / Helpers.frequency;
-		//this.realSpeed = this.freqSpeed * this.speed;
-		this.speedPerFrame = this.speed / this.fps;
-
-		this.curNeededSpeed = 0;
-
 		this.section = params.section;
+
+		if(!this.section || !this.img)
+		{
+			this.unusable = true;
+			return;
+		}
+
+		/******************************************/
+
+		this.maxSpeed = ( params.maxSpeed || Helpers.Rand(45, 60) ) * Helpers.km_h2px_s; // 45 - 60 km/h
+		this.speed = params.speed * Helpers.km_h2px_s || this.maxSpeed;
+
+		this.sensRadius = params.sensRadius || 8;
+
+		this.acceleration = ( 100 / params.acceleration || Helpers.Rand(100 / 15, 100 / 10) ) * Helpers.km_h2px_s; // t = 15 & 10 sec - time to reach 100 km/h
+		this.deceleration = ( 100 / params.deceleration || Helpers.Rand(100 / 10, 100 / 5) ) * Helpers.km_h2px_s; // t = 10 - 5 sec - time to stop from 100 km/h
+
+		this.size = params.size || this.section.size;
+
+		this.turnChance = params.turnChance || 0.8;
+		this.turnSpeed = ( params.turnSpeed || 10 ) * Helpers.km_h2px_s; // km/h to
+
+		/******************************************/
+
 		this.pos = new Point2d(this.section.center.x, this.section.center.y);
 		this.curPos = new Point2d(this.pos.x, this.pos.y);
+
 		this.dir = this.section.dir;
 		this.type = 3;
-
-		this.sensRadius = 8;
-		this.acceleration = Helpers.Rand(100 / 15, 100 / 10) * Helpers.km_h2px_s; // t = 15 & 10 sec - time to reach 100 km/h
-		this.deceleration = Helpers.Rand(100 / 10, 100 / 5) * Helpers.km_h2px_s;
-
-		this.size = params.size;
 
 		this.crossSections = []; // stack of sections to change dir
 		this.sensSection = null; // section at the border of sensitivity radius
 
-		this.init();
-		this.updateDir();
+		/******************************************/
+
+		this.fps = 1000 / Helpers.frequency;
+		this.speedPerFrame = this.speed / this.fps;
+
+		this.curNeededSpeed = 0;
 
 		this.debug = true;
 
 		this.unusable = false;
+
+		this.init();
+		this.updateDir();
 	}
 
 	/***********************************/
@@ -48,7 +64,7 @@ export default class Vehicle
 		let section = this.section;
 		for (let i = 0; i < this.sensRadius; i++)
 		{
-			if( section.crossSection && ( !section.next || (Math.random() > 0.8) ) )
+			if( section.crossSection && ( !section.next || (Math.random() > this.turnChance) ) )
 			{
 				this.sensSection = section.crossSection;
 				this.crossSections.push( { section : this.sensSection, distance : i * this.size } );
@@ -156,7 +172,7 @@ export default class Vehicle
 	{
 		if(this.section.center.between(this.curPos, this.curPos.plus(this.dir.mult(this.speedPerFrame))))
 		{
-			if( this.sensSection.crossSection && ( !this.sensSection.next || (Math.random() > 0.8) ) ) // decision to change direction by random with big chance to go straight
+			if( this.sensSection.crossSection && ( !this.sensSection.next || (Math.random() > this.turnChance) ) ) // decision to change direction by random with big chance to go straight
 			{
 				this.sensSection = this.sensSection.crossSection;
 				this.crossSections.push({ section : this.sensSection, distance : this.getDistance2turn(this.sensSection) } );
@@ -200,7 +216,6 @@ export default class Vehicle
 		}
 
 		let dir = this.dir.mult(this.speedPerFrame);
-		let crossSpeed = 10 * Helpers.km_h2px_s; // 10 km/h
 
 
 		//let distance2brake = (Math.pow(this.speed, 2) - Math.pow(0.5, 2))/this.deceleration; // 0.5 = 15 km/h
@@ -210,11 +225,11 @@ export default class Vehicle
 		if(this.crossSections.length)
 		{
 			this.crossSections[0].distance -= Math.abs(dir.x) + Math.abs(dir.y);
-			this.curNeededSpeed = Math.sqrt(Math.pow(crossSpeed, 2) + 2 * this.crossSections[0].distance * this.deceleration);
+			this.curNeededSpeed = Math.sqrt(Math.pow(this.turnSpeed, 2) + 2 * this.crossSections[0].distance * this.deceleration);
 
 			if(this.speed >= this.curNeededSpeed)
 			{
-				this.speed = Math.max(crossSpeed, this.speed - this.deceleration / this.fps);
+				this.speed = Math.max(this.turnSpeed, this.speed - this.deceleration / this.fps);
 				//this.realSpeed = this.freqSpeed*this.speed;
 				this.speedPerFrame = this.speed / this.fps;
 			}

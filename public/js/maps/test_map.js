@@ -2,10 +2,15 @@
 
 import Point2d from "../cls/point2d";
 import Road from "../cls/road";
+import Helpers from "../cls/helpers";
 
 function testRoads(width, height, laneSize, laneImg)
 {
 	let roads = [], lanes = [], roadDir = [];
+
+	laneSize = laneSize || Helpers.laneSize;
+	laneImg = laneImg || document.getElementById("roads_lane");
+
 	/***********<**********/
 	lanes.push( { start : new Point2d(laneSize/2, laneSize/2), end : new Point2d(width - laneSize/2, laneSize/2), size : laneSize, img : laneImg } );
 	lanes.push( { start : new Point2d(/*laneSize +*/ laneSize/2, laneSize + laneSize/2), end : new Point2d(width /*- laneSize*/ - laneSize/2, laneSize + laneSize/2), size : laneSize, img : laneImg } );

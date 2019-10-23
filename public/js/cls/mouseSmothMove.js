@@ -23,8 +23,8 @@ export default class MouseSmoothMove
 			                    {
 				                    ths.smoothStop();
 
-				                    viewport.LeftTop.x = ths.getMouseMove(viewport.LeftTop.x + e.pageX - ths.prevMousePos.x, ths.maxMouseMoveSmoothOffset, viewport.canvas.width - viewport.mapWidth.zoom(viewport) - ths.maxMouseMoveSmoothOffset);
-				                    viewport.LeftTop.y = ths.getMouseMove(viewport.LeftTop.y + e.pageY - ths.prevMousePos.y, ths.maxMouseMoveSmoothOffset, viewport.canvas.height - viewport.mapHeight.zoom(viewport) - ths.maxMouseMoveSmoothOffset);
+				                    viewport.leftTop.x = ths.getMouseMove(viewport.leftTop.x + e.pageX - ths.prevMousePos.x, ths.maxMouseMoveSmoothOffset, viewport.canvas.width - viewport.mapWidth.zoom(viewport) - ths.maxMouseMoveSmoothOffset);
+				                    viewport.leftTop.y = ths.getMouseMove(viewport.leftTop.y + e.pageY - ths.prevMousePos.y, ths.maxMouseMoveSmoothOffset, viewport.canvas.height - viewport.mapHeight.zoom(viewport) - ths.maxMouseMoveSmoothOffset);
 			                    }
 			                    ths.prevMousePos.x = e.pageX;
 			                    ths.prevMousePos.y = e.pageY;
@@ -34,30 +34,30 @@ export default class MouseSmoothMove
 		                    {
 		                  	    if(e.which == 1) //нажата левая кнопка
 			                    {
-				                    ths.smoothMoveTo = new Point2d(viewport.LeftTop.x, viewport.LeftTop.y);
+				                    ths.smoothMoveTo = new Point2d(viewport.leftTop.x, viewport.leftTop.y);
 				                    console.log(ths.smoothMoveTo);
 
 				                    /*****************/
 				                    // left-side smooth
-				                    if ((viewport.LeftTop.x <= ths.maxMouseMoveSmoothOffset) && (viewport.LeftTop.x > 0))
+				                    if ((viewport.leftTop.x <= ths.maxMouseMoveSmoothOffset) && (viewport.leftTop.x > 0))
 					                    ths.smoothMoveTo.x = 0;
 				                    // right-side smooth
-				                    else if ((viewport.LeftTop.x >= viewport.canvas.width - viewport.mapWidth.zoom(viewport) - ths.maxMouseMoveSmoothOffset) && (viewport.LeftTop.x < viewport.canvas.width - viewport.mapWidth.zoom(viewport)))
+				                    else if ((viewport.leftTop.x >= viewport.canvas.width - viewport.mapWidth.zoom(viewport) - ths.maxMouseMoveSmoothOffset) && (viewport.leftTop.x < viewport.canvas.width - viewport.mapWidth.zoom(viewport)))
 					                    ths.smoothMoveTo.x = viewport.canvas.width - viewport.mapWidth.zoom(viewport);
 
 				                    /*****************/
 				                    // top-side smooth
-				                    if ((viewport.LeftTop.y <= ths.maxMouseMoveSmoothOffset) && (viewport.LeftTop.y > 0))
+				                    if ((viewport.leftTop.y <= ths.maxMouseMoveSmoothOffset) && (viewport.leftTop.y > 0))
 					                    ths.smoothMoveTo.y = 0;
 				                    // bottom-side smooth
-				                    else if ((viewport.LeftTop.y >= viewport.canvas.height - viewport.mapHeight.zoom(
-					                    viewport) - ths.maxMouseMoveSmoothOffset) && (viewport.LeftTop.y < viewport.canvas.height - viewport.mapHeight.zoom(viewport)))
+				                    else if ((viewport.leftTop.y >= viewport.canvas.height - viewport.mapHeight.zoom(
+					                    viewport) - ths.maxMouseMoveSmoothOffset) && (viewport.leftTop.y < viewport.canvas.height - viewport.mapHeight.zoom(viewport)))
 					                    ths.smoothMoveTo.y = viewport.canvas.height - viewport.mapHeight.zoom(viewport);
 
 				                    // direction for smoothing vector
-				                    ths.smoothMoveDir = ths.smoothMoveTo.minus(viewport.LeftTop).mult(1 / ths.smoothSpeedParts).round();
+				                    ths.smoothMoveDir = ths.smoothMoveTo.minus(viewport.leftTop).mult(1 / ths.smoothSpeedParts).round();
 				                    // end point for smoothing
-				                    ths.smoothMoveTo = ths.smoothMoveDir.mult(ths.smoothSpeedParts).round().plus(viewport.LeftTop);
+				                    ths.smoothMoveTo = ths.smoothMoveDir.mult(ths.smoothSpeedParts).round().plus(viewport.leftTop);
 
 				                    //start smoothing
 				                    ths.smoothMoveInterval = setInterval(function ()
@@ -77,8 +77,8 @@ export default class MouseSmoothMove
 
 			                     if(oldZoom != ths.viewport.zoom)
 			                     {
-				                     viewport.LeftTop.x = ths.getMouseMove(viewport.LeftTop.x - (e.pageX - viewport.offset.left - viewport.LeftTop.x) * (zoomChange - 1), 0, viewport.canvas.width - viewport.mapWidth.zoom(viewport));
-				                     viewport.LeftTop.y = ths.getMouseMove(viewport.LeftTop.y - (e.pageY - viewport.offset.top - viewport.LeftTop.y) * (zoomChange - 1), 0, viewport.canvas.height - viewport.mapHeight.zoom(viewport));
+				                     viewport.leftTop.x = ths.getMouseMove(viewport.leftTop.x - (e.pageX - viewport.offset.left - viewport.leftTop.x) * (zoomChange - 1), 0, viewport.canvas.width - viewport.mapWidth.zoom(viewport));
+				                     viewport.leftTop.y = ths.getMouseMove(viewport.leftTop.y - (e.pageY - viewport.offset.top - viewport.leftTop.y) * (zoomChange - 1), 0, viewport.canvas.height - viewport.mapHeight.zoom(viewport));
 			                     }
 		                     });
 	}
@@ -87,8 +87,8 @@ export default class MouseSmoothMove
 	{
 		if(this.smoothMoveInterval && this.smoothMoveDir)
 		{
-			this.viewport.LeftTop = this.viewport.LeftTop.plus(this.smoothMoveDir);
-			if(this.viewport.LeftTop.eq(this.smoothMoveTo))
+			this.viewport.leftTop = this.viewport.leftTop.plus(this.smoothMoveDir);
+			if(this.viewport.leftTop.eq(this.smoothMoveTo))
 				clearInterval(this.smoothMoveInterval);
 		}
 	}
@@ -97,7 +97,7 @@ export default class MouseSmoothMove
 	{
 		if(this.smoothMoveInterval)
 		{
-			this.viewport.LeftTop = this.smoothMoveTo;
+			this.viewport.leftTop = this.smoothMoveTo;
 			clearInterval(this.smoothMoveInterval);
 		}
 	}

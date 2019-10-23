@@ -5,34 +5,36 @@ import Vehicle from "./vehicle";
 
 export default class ViewPort
 {
-	constructor(canvasID, screenWidth, screenHeight)
+	constructor(canvasID, params)
 	{
+		params = params || {};
+
 		this.canvas = document.getElementById(canvasID); //
-		this.canvas.width = screenWidth;
-		this.canvas.height = screenHeight;
+		this.canvas.width = params.width || 900;
+		this.canvas.height = params.height || 500;
+
+		this.zoom = params.zoom || 1;
+
+		this.roadsWidth = params.roadsWidth || 320; // to build roads
+		this.roadsHeight = params.roadsHeight || 320;
+
+		this.vehiclesParams = params.vehicles || []; // params for vehicles
+		this.vehicleMaxCnt = this.vehiclesParams.length || params.vehicleMaxCnt || 5;
+		this.vehicleSpown = params.vehicleSpown || new Point2d(10, 10);
+
+		this.carDefaultImg = params.carDefaultImg || [ document.getElementById("car_01x20") ];
+
+		/*******************************************************/
 
 		this.ctx = this.canvas.getContext("2d");
 
 		this.offset = $(this.canvas).offset();
 
-		this.LeftTop = new Point2d(0, 0);
-		this.zoom = 1;
-
+		this.vehicles = [];
+		this.roads = [];
+		this.leftTop = new Point2d(0, 0);
 		this.mapWidth = 0; // size of map
 		this.mapHeight = 0;
-
-		this.roadsWidth = 320; // to build roads
-		this.roadsHeight = 320;
-
-		this.laneImg = document.getElementById("roads_lane");
-		this.carImg = [];
-		this.carImg.push(document.getElementById("car_01x20"));
-
-		this.roads = [];
-		this.vehicles = [];
-		this.vehCnt = 0;
-
-		this.vehicleInterval = null;
 
 		new MouseSmoothMove(this);
 	}
@@ -42,11 +44,8 @@ export default class ViewPort
 		let ths = this;
 		// get roads
 		this.initRoads(roads);
-		// init vehicles
-		this.vehicleInterval = setInterval(function ()
-		                                       {
-			                                       ths.addVehicle();
-		                                       }, 2000);
+
+		this.initVehicles();
 
 		// start to work
 		setInterval(function ()
@@ -207,7 +206,7 @@ export default class ViewPort
 											roads[i].lanes[l].sections[m].crossSection = roads[j].lanes[k].sections[n];
 										}
 									}
-									debug.innerHTML =  "(" + roads[j].lanes[k].sections[n].center.x + "," + roads[j].lanes[k].sections[n].center.y + " - r-" + j + ", l-" + k +", s-" + n + ") = (" + roads[i].lanes[l].sections[m].center.x + "," + roads[i].lanes[l].sections[m].center.y + " - r-" + i + ", l-" + l +", s-" + m + ")<br />" + debug.innerHTML;
+									//debug.innerHTML =  "(" + roads[j].lanes[k].sections[n].center.x + "," + roads[j].lanes[k].sections[n].center.y + " - r-" + j + ", l-" + k +", s-" + n + ") = (" + roads[i].lanes[l].sections[m].center.x + "," + roads[i].lanes[l].sections[m].center.y + " - r-" + i + ", l-" + l +", s-" + m + ")<br />" + debug.innerHTML;
 									break;
 								}
 							}
@@ -220,18 +219,12 @@ export default class ViewPort
 		/*******************************/
 		for (let i = 0; i < roads.length; i++)
 		{
-			let curDebug = document.getElementById("debug" + i);
-			curDebug.innerHTML += "road " + i + "<br />";
 			for (let l = 0; l < roads[i].lanes.length; l++)
 			{
-				curDebug.innerHTML += "lane " + l + "<br />";
 				for (let m = 0; m < roads[i].lanes[l].sections.length; m++)
 				{
 					maxX = Math.max(maxX, roads[i].lanes[l].sections[m].center.x);
 					maxY = Math.max(maxY, roads[i].lanes[l].sections[m].center.y);
-					curDebug.innerHTML +=  "section " + m + " (" + roads[i].lanes[l].sections[m].center.x + "," + roads[i].lanes[l].sections[m].center.y + ")<br />";
-					if (roads[i].lanes[l].sections[m].crossDir)
-						curDebug.innerHTML +=  "-> " + roads[i].lanes[l].sections[m].crossSectionNum + " (" + roads[i].lanes[l].sections[m].crossDir.x + "," + roads[i].lanes[l].sections[m].crossDir.y + " | right: " + roads[i].lanes[l].sections[m].rightDir.x + "," + roads[i].lanes[l].sections[m].rightDir.y + " | left: " + roads[i].lanes[l].sections[m].leftDir.x + "," + roads[i].lanes[l].sections[m].leftDir.y + ")<br />";
 				}
 			}
 		}
@@ -243,25 +236,46 @@ export default class ViewPort
 		this.roads = roads;
 	}
 
-
-	addVehicle(point)
+	initVehicles()
 	{
-		if(!point)
-			point = new Point2d(10, 10);
-		if(point)
+		// vehicles data from params
+		if(this.vehiclesParams.length)
 		{
-			for (let i = 0; i < this.roads.length; i++)
-				for (let j = 0; j < this.roads[i].lanes.length; j++)
-					for (let k = 0; k < this.roads[i].lanes[j].sections.length; k++)
-						if(point.eq(this.roads[i].lanes[j].sections[k].center))
-						{
-							this.vehicles.push(new Vehicle( { img : this.carImg[0], section : this.roads[i].lanes[j].sections[k], size : Helpers.laneSize } ));
-							this.vehCnt++;
-							if( this.vehicleInterval && (this.vehCnt > 5) )
-								clearInterval(this.vehicleInterval);
-							return true;
-						}
+			for (let i = 0; i < this.vehicleMaxCnt; i++)
+				this.addVehicle(this.vehiclesParams[i]);
 		}
+		else // if no vehicles data then generate them
+		{
+			let ths = this;
+			let vehicleInterval = setInterval(function ()
+			                                  {
+				                                  ths.addVehicle();
+
+				                                  if( vehicleInterval && (ths.vehicles.length > ths.vehicleMaxCnt) )
+					                                  clearInterval(vehicleInterval);
+			                                  }, 2000);
+		}
+	}
+
+	addVehicle(params)
+	{
+		params = params || {};
+
+		params.img = params.img || this.carDefaultImg;
+
+		params.point = params.point || this.vehicleSpown;
+
+		for (let i = 0; i < this.roads.length; i++)
+			for (let j = 0; j < this.roads[i].lanes.length; j++)
+				for (let k = 0; k < this.roads[i].lanes[j].sections.length; k++)
+					if(params.point.eq(this.roads[i].lanes[j].sections[k].center))
+					{
+						params.section = this.roads[i].lanes[j].sections[k];
+
+						this.vehicles.push(new Vehicle(params));
+
+						return true;
+					}
 		return false;
 	}
 
