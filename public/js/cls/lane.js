@@ -156,7 +156,11 @@ export default class Lane
 				let crossRightCnt = this.sections[i + 1].crossSection.rightCnt;
 				if(crossRightCnt == this.sections[i + 1].rightCnt)
 					if( (i + crossRightCnt == this.sections.length - 1) && (this.sections[i + 1].crossSectionNum == crossRightCnt - 1) )
+					{
 						this.sections[i + 1].calcCorner();
+						if(this.sections[i + 1].left && !this.sections[i + 1].left.dir.eq(this.sections[i + 1].dir))
+							this.sections[i + 1].calcSepCorner();
+					}
 			}
 			/**************************************************************************************/
 			/**************************************************************************************/
