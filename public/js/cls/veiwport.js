@@ -236,6 +236,7 @@ export default class ViewPort
 		this.mapHeight = maxY + Helpers.laneSize / 2;
 
 		this.roads = roads;
+		console.log(roads);
 	}
 
 	initVehicles()
@@ -321,5 +322,23 @@ export default class ViewPort
 		/*************************/
 		/*************************/
 		this.drawContent();
+	}
+
+	debugSections(x, y)
+	{
+		for (let i = 0; i < this.roads.length; i++)
+			for (let j = 0; j < this.roads[i].lanes.length; j++)
+				for (let k = 0; k < this.roads[i].lanes[j].sections.length; k++)
+				{
+					let section = this.roads[i].lanes[j].sections[k];
+					let sectionLeftTop = section.center.minus(new Point2d(section.size / 2, section.size / 2)).toDraw(this);
+					let sectionRightBot = section.center.plus(new Point2d(section.size / 2, section.size / 2)).toDraw(this);
+					if( (sectionLeftTop.x < x && x < sectionRightBot.x)
+						&& (sectionLeftTop.y < y && y < sectionRightBot.y) )
+					{
+						this.roads[i].lanes[j].sections[k].debug = !this.roads[i].lanes[j].sections[k].debug;
+						return;
+					}
+				}
 	}
 }

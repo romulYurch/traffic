@@ -4,17 +4,18 @@ import Lane from "./lane";
 
 export default class Road
 {
-	constructor(dirs)
+	constructor(dirs, num)
 	{
 		this.dirs = {};
 		this.lanes = [];
+		this.num = num;
 		for (let i = 0; i < dirs.length; i++)
 		{
 			let lanes = [];
 			let lane = {};
 			for (let j = 0; j < dirs[i].lanes.length; j++)
 			{
-				lane = new Lane(dirs[i].lanes[j], dirs[i].dir, j);
+				lane = new Lane(dirs[i].lanes[j], dirs[i].dir, j, this.num);
 				lanes.push(lane);
 				this.lanes.push(lane);
 			}

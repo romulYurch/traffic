@@ -12,18 +12,19 @@ export default class Section
 		this.dir = params.dir; //direction of lane
 		this.img = params.img; //bg img section
 		this.laneNum = params.laneNum; //number of lane
+		this.roadNum = params.roadNum; //number of road
 		this.num = params.num; //number in lane
 		this.lane = params.lane; //parent lane
 
 		this.maxSpeed = 2; // 1px/sec = 30km/h => maxSpeed = 60km/h
 
 		/******uses to calc right and left directions******/
-		let corner = (this.dir.x) ? Math.acos(this.dir.x) : Math.asin(this.dir.y);
-		let markRightDir = new Point2d(Math.round(Math.cos(corner + Math.PI * 3 / 4)), Math.round(Math.sin(corner + Math.PI * 3 / 4)));
-		let markLeftDir = new Point2d(Math.round(Math.cos(corner - Math.PI * 3 / 4)), Math.round(Math.sin(corner - Math.PI * 3 / 4)));
+		this.corner = (this.dir.x) ? Math.acos(this.dir.x) : Math.asin(this.dir.y);
+		let markRightDir = new Point2d(Math.round(Math.cos(this.corner + Math.PI * 3 / 4)), Math.round(Math.sin(this.corner + Math.PI * 3 / 4)));
+		let markLeftDir = new Point2d(Math.round(Math.cos(this.corner - Math.PI * 3 / 4)), Math.round(Math.sin(this.corner - Math.PI * 3 / 4)));
 
 		/*******normalized right and left directions******/
-		this.rightDir = new Point2d(Math.round(Math.cos(corner + Math.PI / 2)), Math.round(Math.sin(corner + Math.PI / 2)));
+		this.rightDir = new Point2d(Math.round(Math.cos(this.corner + Math.PI / 2)), Math.round(Math.sin(this.corner + Math.PI / 2)));
 		this.leftDir = this.rightDir.mult(-1);
 
 		/********marking right side***********************/
@@ -65,6 +66,9 @@ export default class Section
 		/*******offroad lanes cnt***************************/
 		this.rightCnt = 0; // lanes to rightside
 		this.leftCnt = 0; // lanes to leftside
+
+		/*******debug***************************************/
+		this.debug = false;
 	}
 	//****************************************
 	isRightSibling(section)
@@ -85,8 +89,8 @@ export default class Section
 		{
 			if(!this.crossInSection || this.prev)
 			{
-				let start = this.center.plus(new Point2d(-this.size / 2, -this.size / 2));
-				this.drawImg(viewport, 0, 0, start.x, start.y);
+				let leftTop = this.center.plus(new Point2d(-this.size / 2, -this.size / 2));
+				this.drawImg(viewport, 0, 0, leftTop.x, leftTop.y);
 			}
 		}
 		else if(this.markingCorner.imgLeft)
@@ -106,6 +110,8 @@ export default class Section
 
 		if(this.markingCorner)
 			this.drawCorner(this.markingCorner, viewport);
+
+		this.drawDebug(viewport);
 	}
 	//****************************************
 	drawMarkingLine(line, viewport)
@@ -159,6 +165,25 @@ export default class Section
 		pointFrom = pointFrom.toDraw(viewport);
 		pointTo = pointTo.toDraw(viewport);
 		viewport.ctx.arcTo(pointFrom.x, pointFrom.y, pointTo.x, pointTo.y, radius.zoom(viewport));
+	}
+	//****************************************
+	drawDebug(viewport)
+	{
+		if(this.debug)
+		{
+			let leftTop = this.center.minus(new Point2d(this.size / 2, this.size / 2));
+
+			viewport.ctx.strokeStyle = "#00f500";
+			viewport.ctx.strokeRect(leftTop.x.toScreenX(viewport),
+			                        leftTop.y.toScreenY(viewport),
+			                        this.size.zoom(viewport),
+			                        this.size.zoom(viewport));
+
+			let textPos = this.center.minus(new Point2d(this.size / 2, 0));
+			viewport.ctx.fillStyle = "#f00000";
+			viewport.ctx.font = "12px Arial";
+			viewport.ctx.fillText(this.roadNum + ", " + this.laneNum + ", " + this.num, textPos.x.toScreenX(viewport), textPos.y.toScreenY(viewport));
+		}
 	}
 	//****************************************
 	calcLanesMarkings()

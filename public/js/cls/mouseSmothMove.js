@@ -69,6 +69,9 @@ export default class MouseSmoothMove
 				                                                         {
 					                                                         ths.smoothMove();
 				                                                         }, ths.smoothPartInterval);
+
+				                    console.log(viewport.leftTop, e.pageX, e.pageY);
+				                    viewport.debugSections(e.pageX - viewport.offset.left, e.pageY - viewport.offset.top);
 			                    }
 		                    });
 

@@ -135,6 +135,9 @@ export default class Vehicle
 			{
 				viewport.ctx.strokeStyle = "#00ff00";
 				this.drawRect(viewport, this.crossSections[i].section.center.x - this.crossSections[i].section.size / 2, this.crossSections[i].section.center.y - this.crossSections[i].section.size / 2);
+
+				viewport.ctx.strokeStyle = "#fdff2b";
+				this.drawRect(viewport, this.crossSections[i].turnSection.center.x - this.crossSections[i].turnSection.size / 2, this.crossSections[i].turnSection.center.y - this.crossSections[i].turnSection.size / 2);
 			}
 		}
 		/*******************/
@@ -174,8 +177,28 @@ export default class Vehicle
 		{
 			if( this.sensSection.crossSection && ( !this.sensSection.next || (Math.random() > this.turnChance) ) ) // decision to change direction by random with big chance to go straight
 			{
+				let turnSection = this.sensSection.crossSection;
+				/*********************************************************/
+				/******finding section to make turn in true lane**********/
+				let dir = this.sensSection.corner - turnSection.corner;
+				//console.log(turnSection.corner);
+				dir = (dir < 0) ? 2 * Math.PI + dir : dir;
+				/*if(dir == Math.PI / 2) // left turn
+				{
+					while (this.sensSection.next && turnSection.prev.crossInDir && turnSection.next.crossInDir.eq(this.sensSection.dir))
+						turnSection = turnSection.prev;
+				}
+				else if(dir == 3 * Math.PI / 2 ) // right turn*/
+				{
+					while (this.sensSection.next && turnSection.next.crossInDir && turnSection.next.crossInDir.eq(this.sensSection.dir))
+						turnSection = turnSection.next;
+				}
+				/******finding section to make turn in true lane END******/
+				/*********************************************************/
+
 				this.sensSection = this.sensSection.crossSection;
-				this.crossSections.push({ section : this.sensSection, distance : this.getDistance2turn(this.sensSection) } );
+
+				this.crossSections.push({ section : this.sensSection, turnSection: turnSection, distance : this.getDistance2turn(this.sensSection) } );
 			}
 
 			if(this.sensSection.next)

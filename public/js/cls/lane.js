@@ -6,7 +6,7 @@ import Section from "./section";
 
 export default class Lane
 {
-	constructor(params, dir, num)
+	constructor(params, dir, num, roadNum)
 	{
 		this.type = (params.start.x == params.end.x) ? "v" : "h";
 		if( (this.type == "v") && (params.start.y < params.end.y) && (dir == 1) ||
@@ -24,6 +24,7 @@ export default class Lane
 		this.dir = new Point2d( (this.type == "v") ? 0 : dir, (this.type == "v") ? dir : 0 );
 		this.size = params.size;
 		this.num = num;
+		this.roadNum = roadNum;
 		//this.dirNum = dir;
 
 		this.width = Math.abs(this.end.x - this.start.x) + this.size;
@@ -52,10 +53,10 @@ export default class Lane
 
 		while (!point.eq(this.end))
 		{
-			this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, num: num++, lane :  this  } ) );
+			this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, roadNum: this.roadNum, num: num++, lane :  this  } ) );
 			point = point.plus(plusdDir);
 		}
-		this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, num: num, lane :  this  } ) );
+		this.sections.push( new Section( { center : point, size : this.size, dir : this.dir, img : img, laneNum : this.num, roadNum: this.roadNum, num: num, lane :  this  } ) );
 
 		/****************************/
 		for (let i = 0; i < this.sections.length; i++)
