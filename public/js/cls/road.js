@@ -64,7 +64,7 @@ export default class Road
 			for (let k = 0; k < this.lanes[i].sections.length; k++)
 			{
 				let rightLane = this.lanes[i].sections[k].right;
-				let rightLaneCnt = 1;
+				let rightLaneCnt = 0;
 				while(rightLane != null)
 				{
 					rightLaneCnt++;
@@ -75,18 +75,24 @@ export default class Road
 
 				/**********************/
 				let leftLane = this.lanes[i].sections[k].left;
-				let leftLaneCnt = 1;
+				let leftLaneCnt = 0, sepLaneCnt = 0;
 				let curDir = this.lanes[i].sections[k].dir; //направление ряда, с которого проверяется поворот
 				while(leftLane != null)
 				{
-					leftLaneCnt++;
 					if(curDir.eq(leftLane.dir)) //если направление то же, считаем полосы слева
+					{
 						leftLane = leftLane.left;
+						leftLaneCnt++;
+					}
 					else // как только начали считать встречку, берем полосы справа
+					{
 						leftLane = leftLane.right;
+						sepLaneCnt++;
+					}
 				}
 
 				this.lanes[i].sections[k].leftCnt = leftLaneCnt;
+				this.lanes[i].sections[k].sepCnt = sepLaneCnt;
 			}
 	}
 	//****************************************

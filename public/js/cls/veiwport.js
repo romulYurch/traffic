@@ -47,7 +47,7 @@ export default class ViewPort
 		// get roads
 		this.initRoads(roads);
 
-		this.initVehicles();
+		//this.initVehicles();
 
 		// start to work
 		setInterval(function ()
@@ -87,7 +87,7 @@ export default class ViewPort
 									if(roads[i].lanes[l].sections[m].rightDir.eq(roads[j].lanes[k].sections[n].dir)) //поворот направо
 									{
 										//зная, сколько еще рядов находится справа, можем узнать, кончается ли дорога перекрестком или нет
-										if(n + roads[i].lanes[l].sections[m].rightCnt < roads[j].lanes[k].sections.length) //если есть куда ехать, то это поворот с этого сектора
+										if(n + roads[i].lanes[l].sections[m].rightCnt < roads[j].lanes[k].sections.length - 1) //если есть куда ехать, то это поворот с этого сектора
 										{
 											roads[i].lanes[l].sections[m].crossDir = roads[j].lanes[k].sections[n].dir;
 											roads[i].lanes[l].sections[m].crossLane = roads[j].lanes[k];
@@ -117,7 +117,7 @@ export default class ViewPort
 									else if(roads[i].lanes[l].sections[m].leftDir.eq(roads[j].lanes[k].sections[n].dir)) //поворот налево
 									{
 										//зная, сколько еще рядов находится слева, можем узнать, кончается ли дорога перекрестком или нет
-										if(n + roads[i].lanes[l].sections[m].leftCnt < roads[j].lanes[k].sections.length) //если есть куда ехать, то это поворот с этого сектора
+										if(n + roads[i].lanes[l].sections[m].leftCnt < roads[j].lanes[k].sections.length - 1) //если есть куда ехать, то это поворот с этого сектора
 										{
 											roads[i].lanes[l].sections[m].crossDir = roads[j].lanes[k].sections[n].dir;
 											roads[i].lanes[l].sections[m].crossLane = roads[j].lanes[k];
@@ -151,7 +151,7 @@ export default class ViewPort
 									if(roads[j].lanes[k].sections[n].rightDir.eq(roads[i].lanes[l].sections[m].dir)) //поворот направо
 									{
 										//зная, сколько еще рядов находится справа, можем узнать, кончается ли дорога перекрестком или нет
-										if(m + roads[j].lanes[k].sections[n].rightCnt < roads[i].lanes[l].sections.length) //если есть куда ехать, то это поворот с этого сектора
+										if(m + roads[j].lanes[k].sections[n].rightCnt < roads[i].lanes[l].sections.length - 1) //если есть куда ехать, то это поворот с этого сектора
 										{
 											roads[j].lanes[k].sections[n].crossDir = roads[i].lanes[l].sections[m].dir;
 											roads[j].lanes[k].sections[n].crossLane = roads[i].lanes[l];
@@ -181,7 +181,7 @@ export default class ViewPort
 									else if(roads[j].lanes[k].sections[n].leftDir.eq(roads[i].lanes[l].sections[m].dir)) //поворот налево
 									{
 										//зная, сколько еще рядов находится слева, можем узнать, кончается ли дорога перекрестком или нет
-										if(m + roads[j].lanes[k].sections[n].leftCnt < roads[i].lanes[l].sections.length) //если есть куда ехать, то это поворот с этого сектора
+										if(m + roads[j].lanes[k].sections[n].leftCnt < roads[i].lanes[l].sections.length - 1) //если есть куда ехать, то это поворот с этого сектора
 										{
 											roads[j].lanes[k].sections[n].crossDir = roads[i].lanes[l].sections[m].dir;
 											roads[j].lanes[k].sections[n].crossLane = roads[i].lanes[l];

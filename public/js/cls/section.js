@@ -66,6 +66,7 @@ export default class Section
 		/*******offroad lanes cnt***************************/
 		this.rightCnt = 0; // lanes to rightside
 		this.leftCnt = 0; // lanes to leftside
+		this.sepCnt = 0; // lanes into separate direction
 
 		/*******debug***************************************/
 		this.debug = false;
@@ -182,7 +183,7 @@ export default class Section
 			let textPos = this.center.minus(new Point2d(this.size / 2, 0));
 			viewport.ctx.fillStyle = "#f00000";
 			viewport.ctx.font = "12px Arial";
-			viewport.ctx.fillText(this.roadNum + ", " + this.laneNum + ", " + this.num, textPos.x.toScreenX(viewport), textPos.y.toScreenY(viewport));
+			viewport.ctx.fillText(this.roadNum + ", " + this.lane.num + ", " + this.num, textPos.x.toScreenX(viewport), textPos.y.toScreenY(viewport));
 		}
 	}
 	//****************************************
@@ -241,7 +242,7 @@ export default class Section
 		this.markingCorner = { from : from, corner : corner, to : to, rad : rad, imgLeft : imgLeft, lineDash : [] };
 	}
 	//****************************************
-	calcCorner()
+	calcCornerMarkings()
 	{
 		if (this.crossDir != null)
 		{
@@ -295,11 +296,11 @@ export default class Section
 				}
 			}
 
-			this.markingCorner = { from : from, corner : corner, to : to, rad : rad, imgLeft : imgLeft, imgRight : imgRight, lineDash : (this.rightCnt > 1) ? [4] : [] };
+			this.markingCorner = { from : from, corner : corner, to : to, rad : rad, imgLeft : imgLeft, imgRight : imgRight, lineDash : (this.rightCnt > 0) ? [4] : [] };
 		}
 	}
 	//****************************************
-	calcSepCorner()
+	calcSepCornerMarkings()
 	{
 		if (this.crossDir)
 		{

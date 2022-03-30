@@ -118,71 +118,77 @@ export default class Lane
 	//****************************************
 	calcSectionsMarkings()
 	{
-		for (let i = 1; i < this.sections.length - 1; i++)
+		for (let i = 1 + this.num; i < this.sections.length; i++)
 		{
-			let endCrossesLanesCnt = (this.sections[i].crossSection && this.sections[i].right) ? this.sections[i].crossSection.rightCnt : 0;
-			let startCrossesLanesCnt = (this.sections[i].crossInSection && this.sections[i].right) ? this.sections[i].crossInSection.rightCnt : 0;
+			let section = this.sections[i];
+			let next = i + 1;
+			let drawLaneMarking = true;
+			let drawLaneSepMarking = true;
 
-			if( (i > startCrossesLanesCnt) && (i < this.sections.length - endCrossesLanesCnt) )
+			if (section.crossDir) // есть пересечение
 			{
-				if ( (this.sections[i].crossDir == null) || ( this.sections[i].crossDir.eq(this.sections[i].leftDir) &&
-					(this.sections[i].crossSection.num == this.sections[i].rightCnt - 1) ) ) // если с этого сектора не поворачиваем или поворачиваем налево
+				let crossSection = section.crossSection;
+				let crossPos = this.sections.length - 1 - i; // с какой с конца секции изгибаем
+
+				if(section.crossDir.eq(section.leftDir)) // поворот налево
 				{
-					if ( (this.sections[i + 1].crossDir == null) || (this.sections[i + 1].crossDir.eq(this.sections[i].leftDir)) ) //и не поворачиваем на следующем или поворачиваем налево
+					if (crossSection.rightCnt == section.rightCnt) // полоса совпадает
 					{
-						if ( (this.sections[i - 1].crossInDir == null) || (this.sections[i - 1].crossInDir.eq(this.sections[i].rightDir)) // и с другого сектора не повернули на предыдущий или повернули, выполняя левый поворот
-							|| ( (this.sections[i - 1].crossInSectionNum == this.sections[i - 1].rightCnt - 1) && (this.sections[i - 1].crossInDir.eq(this.sections[i].leftDir)) ) )  // или же это сектор Т-образный перекрестка
+						// при изгибе дороги мы поворачиваем с последней секции - в нулевую, с предпоследней - в первую
+						// а при перекрестке  - куда-то не в начало, так и отсекаем перекрестки
+						// изгиб должен быть в пределах кол-ва рядов справа от текущей секции и совпадать с позицией секции (если считать с конца)
+						if( (crossPos <= section.rightCnt) && (crossPos == crossSection.num) )
 						{
-							if( (this.sections[i].crossInDir == null) || (this.sections[i].crossInDir.eq(this.sections[i].rightDir)) // и на текущий сектор не повернули или повернули, выполняя левый поворот
-								|| ( (this.sections[i].crossInSectionNum == this.sections[i].rightCnt - 1) && (this.sections[i].crossInDir.eq(this.sections[i].leftDir)) ) ) // или же это сектор Т-образный перекрестка
-								this.sections[i].calcLanesMarkings();
+							section.calcCornerMarkings();
+							drawLaneMarking = false;
+
+							// разделительная разметка между направлениями - рисуем вдоль крайнего левого ряда
+							if(section.leftCnt == 0 && crossSection.leftCnt == 0)
+							{
+								section.calcSepCornerMarkings();
+								drawLaneSepMarking = false;
+							}
+
 						}
-						else if(this.sections[i].rightCnt > 1)
-							this.sections[i].calcLanesMarkings();
 					}
-					else //поворачиваем направо
+
+				}
+				else if(section.crossDir.eq(section.rightDir)) // поворот направо
+				{
+					// поворот с крайней правой в крайнюю правую
+					if ( (section.rightCnt == 0) && (crossSection.rightCnt == 0) )
 					{
-						if(this.sections[i].rightCnt > 1)
-							this.sections[i].calcLanesMarkings();
-						if(this.sections[i].rightCnt == 1)
-							this.sections[i + this.sections[i].rightCnt].calcCorner();
-						else if( this.sections[i + this.sections[i].rightCnt].crossSection && (this.sections[i].rightCnt == this.sections[i + this.sections[i].rightCnt].crossSection.rightCnt) )
-							this.sections[i + this.sections[i].rightCnt].calcCorner();
+						section.calcCornerMarkings();
+						drawLaneMarking = false;
+					}
+
+					if(crossSection.leftCnt == section.leftCnt) // полоса совпадает
+					{
+						// изгиб должен быть в пределах кол-ва рядов справа от текущей секции и совпадать с позицией секции (если считать с конца)
+						if( (crossPos <= section.leftCnt) && (crossPos == crossSection.num) )
+						{
+							section.calcCornerMarkings();
+							drawLaneMarking = false;
+
+							if(section.leftCnt == 0 && crossSection.leftCnt == 0)
+							{
+								section.calcSepCornerMarkings();
+								drawLaneSepMarking = false;
+							}
+						}
 					}
 				}
 			}
 
-			if ( this.sections[i + 1].crossSection ) //если на следующей секции поворот налево
+			if(!section.crossDir || (section.crossSection.num == 0)) // не перекресток
 			{
-				let crossRightCnt = this.sections[i + 1].crossSection.rightCnt;
-				if(crossRightCnt == this.sections[i + 1].rightCnt)
-					if( (i + crossRightCnt == this.sections.length - 1) && (this.sections[i + 1].crossSectionNum == crossRightCnt - 1) )
-					{
-						this.sections[i + 1].calcCorner();
-						if(this.sections[i + 1].left && !this.sections[i + 1].left.dir.eq(this.sections[i + 1].dir))
-							this.sections[i + 1].calcSepCorner();
-					}
-			}
-			/**************************************************************************************/
-			/**************************************************************************************/
-			if(	this.sections[i].left && !this.sections[i].left.dir.eq(this.sections[i].dir) ) //если это полоса крайняя слева
-			{
-				if (!this.sections[i].crossDir && !this.sections[i].crossInDir)
+				if(drawLaneMarking)
+					section.calcLanesMarkings();
+
+				/*if(section.leftCnt == 0)
 				{
-					if(!this.sections[i - 1].crossInDir || this.sections[i - 1].crossInDir.eq(this.sections[i].leftDir))
-					{
-						if(!this.sections[i + 1].crossDir || this.sections[i + 1].crossDir.eq(this.sections[i].rightDir))
-							this.sections[i].calcSepMarkings();
-						else
-							this.sections[i + 1].calcSepCorner();
-					}
-				}
-				else if(this.sections[i + 1].crossDir && !this.sections[i + 1].crossInDir && (i + 1 == this.sections.length - 1) && this.sections[i + 1].crossDir.eq(this.sections[i].rightDir) )
-				{
-					this.sections[i + 1].calcSepCorner();
-					this.sections[i].calcSepMarkings();
-					this.sections[i + 1].crossSection.next.calcSepMarkings();
-				}
+					section.calcSepMarkings();
+				}*/
 			}
 		}
 
