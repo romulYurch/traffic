@@ -26,10 +26,12 @@ $(function()
 	{
 		let viewPort = new ViewPort("trafficCanvas");
 		viewPort.init(testRoads(viewPort.roadsWidth, viewPort.roadsHeight));
-		/*let viewPort2 = new ViewPort("trafficCanvas2", 900, 500);
-		viewPort2.init(testRoads(viewPort2.roadsWidth, viewPort2.roadsHeight, Helpers.laneSize, viewPort2.laneImg));
-		let viewPort3 = new ViewPort("trafficCanvas3", 900, 500);
-		viewPort3.init(testRoads(viewPort3.roadsWidth, viewPort3.roadsHeight, Helpers.laneSize, viewPort3.laneImg));*/
+
+		/*let viewPort2 = new ViewPort("trafficCanvas2", {width: 300, height: 300});
+		viewPort2.init(testRoads(viewPort2.roadsWidth, viewPort2.roadsHeight));
+
+		let viewPort3 = new ViewPort("trafficCanvas3");
+		viewPort3.init(testRoads(viewPort3.roadsWidth, viewPort3.roadsHeight));*/
 	};
 
 	init();
